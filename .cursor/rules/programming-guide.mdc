@@ -1,0 +1,84 @@
+---
+alwaysApply: true
+---
+
+# Code Structure and Modularity
+
+## Function Design
+
+- Keep functions under 20 lines when possible
+- Single Responsibility Principle: one function, one purpose
+- Use early returns to reduce nesting
+- Signal multiple files with `# File: path/to/file.py` comments
+- Group related functionality in modules
+- Use `__init__.py` for clean imports
+
+## Prefer Functional Programming
+
+- Use dataclasses for state, not classes with methods
+- Pure functions when possible
+- Immutable data structures
+- Functions take and return objects (RORO pattern)
+
+# Naming and Style
+
+## PEP 8 Compliance
+
+- Use snake_case for variables, functions, files
+- Descriptive names with verbs: `is_valid_email`, `calculate_confidence`
+- Lines under 79 characters
+- 4-space indentation
+- No unnecessary whitespace
+
+## Type Hints
+
+- Annotate all variables, parameters, and return types
+- Use modern syntax: `list[str]` instead of `List[str]`
+- Use union syntax: `str | None` instead of `Optional[str]`
+- Define type aliases for complex types: `Point = tuple[float, float]`
+
+# Asynchronous Programming
+
+## When to Use Async
+
+- Use `async def`/`await` for I/O-bound tasks: network requests, file operations, database queries
+- Prefer async libraries
+
+# Documentation
+
+## Docstring Standards
+
+- Use Google-style docstrings for all functions and classes
+- Include Args, Returns, and Raises sections
+- Avoid inline comments unless explaining complex logic
+- Document why, not what
+
+# Error Handling and Validation
+
+## Error Strategy
+
+- Use early guard clauses and returns
+- Raise specific exceptions: `ValueError` for invalid input, `TypeError` for wrong types
+- Use logging module instead of print statements
+- Validate complex data with Pydantic
+- Avoid deep nesting; structure for the happy path
+
+# Performance and Efficiency
+
+## Optimization Guidelines
+
+- Use list comprehensions for simple transformations
+- Use generators (yield) for large datasets
+- Use f-strings for string formatting
+- Cache pure functions with `functools.lru_cache`
+- Profile before optimizing
+
+# Data Structures and Patterns
+
+## Recommended Patterns
+
+- Use dataclasses for simple data holders
+- Use Pydantic for data validation and serialization
+- Use properties for computed attributes and validation
+- Prefer composition over inheritance
+- Use protocols for interface definitions
