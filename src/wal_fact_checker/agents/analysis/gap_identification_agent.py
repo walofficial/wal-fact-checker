@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from google.adk import Agent
 
+from wal_fact_checker.core.models import GapQuestionsOutput
+
 MODEL = "gemini-2.0-flash"
 
 gap_identification_agent = Agent(
@@ -19,7 +21,13 @@ gap_identification_agent = Agent(
     IMPLICIT ASSUMPTIONS: "Does this assume X is true? We need to verify X first."
     
     Be highly skeptical. Distrust parametric knowledge. Focus on what could be wrong, outdated, or missing.
+    
+    Return a structured JSON response with gap_questions containing id, question, claim_id, 
+    question_type (temporal/quantifiable/ambiguous/implicit), and priority (1-3).
     """,
     description="Identifies critical gaps and potential weaknesses in claims",
+    output_schema=GapQuestionsOutput,
     output_key="gap_questions",
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )

@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from pydantic import BaseModel, Field
+
 
 @dataclass
 class AtomicClaim:
@@ -61,3 +63,82 @@ class FactCheckReport:
     methodology: str
     timestamp: str
     overall_assessment: str
+
+
+# Pydantic schemas for agent outputs
+class AtomicClaimOutput(BaseModel):
+    """Pydantic schema for structured claim output."""
+
+    id: str = Field(description="Unique identifier for the claim")
+    text: str = Field(description="The atomic, verifiable claim text")
+    category: str | None = Field(default=None, description="Category of the claim")
+    confidence: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Confidence score"
+    )
+
+
+class StructuredClaimsOutput(BaseModel):
+    """Output schema for claim structuring agent."""
+
+    claims: list[AtomicClaimOutput] = Field(
+        description="List of structured atomic claims"
+    )
+
+
+class GapQuestionOutput(BaseModel):
+    """Pydantic schema for gap question output."""
+
+    id: str = Field(description="Unique identifier for the gap question")
+    question: str = Field(description="The critical question to investigate")
+    claim_id: str = Field(description="ID of the claim this question relates to")
+    question_type: str = Field(
+        description="Type: temporal, quantifiable, ambiguous, or implicit"
+    )
+    priority: int = Field(
+        default=1, ge=1, le=3, description="Priority level (1=high, 2=medium, 3=low)"
+    )
+
+
+class GapQuestionsOutput(BaseModel):
+    """Output schema for gap identification agent."""
+
+    gap_questions: list[GapQuestionOutput] = Field(
+        description="List of critical gap questions"
+    )
+
+
+class FactCheckVerdictOutput(BaseModel):
+    """Pydantic schema for fact check verdict."""
+
+    claim_id: str = Field(description="ID of the claim being evaluated")
+    verdict: str = Field(
+        description="Verdict: verified, false, partially_true, or insufficient_evidence"
+    )
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence in the verdict")
+    supporting_evidence: list[str] = Field(description="List of supporting evidence")
+    refuting_evidence: list[str] = Field(description="List of refuting evidence")
+    nuance: str | None = Field(default=None, description="Additional nuance or context")
+
+
+class DraftReportOutput(BaseModel):
+    """Output schema for evidence synthesizer agent."""
+
+    original_text: str = Field(description="Original text being fact-checked")
+    verdicts: list[FactCheckVerdictOutput] = Field(description="List of claim verdicts")
+    methodology: str = Field(description="Methodology used for fact-checking")
+    overall_assessment: str = Field(description="Overall assessment of the text")
+
+
+class CritiqueOutput(BaseModel):
+    """Output schema for adversarial critique agent."""
+
+    identified_issues: list[str] = Field(
+        description="List of identified issues in the draft"
+    )
+    revised_verdicts: list[FactCheckVerdictOutput] = Field(
+        description="Revised verdicts after critique"
+    )
+    strengthened_methodology: str = Field(
+        description="Improved methodology description"
+    )
+    final_assessment: str = Field(description="Final overall assessment")

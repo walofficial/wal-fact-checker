@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from google.adk import Agent
 
+from wal_fact_checker.core.models import StructuredClaimsOutput
+
 MODEL = "gemini-2.0-flash"
 
 claim_structuring_agent = Agent(
@@ -17,8 +19,12 @@ claim_structuring_agent = Agent(
     - Independently verifiable
     - Clear and unambiguous
     
-    Output structured claims with IDs and categories.
+    Return a structured JSON response with claims containing id, text, category (optional), 
+    and confidence score (0.0-1.0).
     """,
     description="Transforms input text into structured, verifiable claims",
+    output_schema=StructuredClaimsOutput,
     output_key="structured_claims",
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )

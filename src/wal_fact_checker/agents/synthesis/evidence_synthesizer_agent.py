@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from google.adk import Agent
 
-from ...core.tools import load_memory_tool, save_to_memory_tool
+from ...core.models import DraftReportOutput
 
 MODEL = "gemini-2.0-flash"
 
@@ -19,9 +19,15 @@ evidence_synthesizer_agent = Agent(
     3. For each structured_claim, query RAG for supporting/refuting evidence
     4. Write initial draft fact-checking report with verdicts and citations
     
-    Verdicts: verified, false, partially_true, insufficient_evidence
+    Return structured JSON with original_text, verdicts (containing claim_id, verdict, 
+    confidence, supporting_evidence, refuting_evidence, nuance), methodology, and overall_assessment.
+    
+    Verdicts: verified, false, partially_true, insufficient_evidencec
     """,
     description="Synthesizes evidence into initial fact-checking report",
-    tools=[save_to_memory_tool, load_memory_tool],
+    # tools=[save_to_memory_tool, load_memory_tool],
+    output_schema=DraftReportOutput,
     output_key="draft_report",
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )

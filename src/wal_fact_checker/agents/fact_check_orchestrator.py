@@ -40,6 +40,3 @@ fact_check_orchestrator = SequentialAgent(
     sub_agents=[analysis_stage, research_stage, synthesis_stage],
     description="WAL Proactive Gap Analysis & Adversarial Critique Fact Checker",
 )
-
-# ADK expects root_agent to be exported
-root_agent = fact_check_orchestrator

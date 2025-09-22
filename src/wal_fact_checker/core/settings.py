@@ -3,8 +3,17 @@
 
 from __future__ import annotations
 
+import os
+
+from dotenv import load_dotenv
 from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    GoogleSecretManagerSettingsSource,
+    PydanticBaseSettingsSource,
+)
+
+load_dotenv(".env", override=True)
 
 
 class AppSettings(BaseSettings):
@@ -14,7 +23,7 @@ class AppSettings(BaseSettings):
     scrape_api_url: str = Field(
         default="https://api.scrape.do", description="Base URL for scrape.do API"
     )
-    scrape_api_key: str = Field(..., description="API key for scrape.do service")
+    scrape_do_token: str = Field(escription="API key for scrape.do service")
 
     # General application settings
     app_name: str = Field(default="WAL Fact Checker", description="Application name")
@@ -32,14 +41,27 @@ class AppSettings(BaseSettings):
         default=10000, description="Maximum content length for processing"
     )
 
-    model_config = SettingsConfigDict(
-        env_prefix="WAL_",
-        case_sensitive=False,
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-        validate_default=True,
-    )
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        project_id = os.getenv("GCP_PROJECT_ID")
+        gcp_settings = GoogleSecretManagerSettingsSource(
+            settings_cls,
+            project_id=project_id,
+        )
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            gcp_settings,
+            file_secret_settings,
+        )
 
 
 # Create application settings instance

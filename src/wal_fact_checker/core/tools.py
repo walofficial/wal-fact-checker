@@ -12,7 +12,7 @@ from google.adk.tools import google_search as adk_google_search
 from .settings import settings
 
 
-async def scrape_website(url: str, country_code: str | None = None) -> dict[str, Any]:
+async def scrape_website(url: str, country_code: str) -> dict[str, Any]:
     """Scrape content from a website using scrape.do API.
 
     Args:
@@ -24,7 +24,7 @@ async def scrape_website(url: str, country_code: str | None = None) -> dict[str,
     """
     try:
         params = {
-            "token": settings.scrape_api_key,
+            "token": settings.scrape_do_token,
             "url": url,
             "geoCode": (country_code or "US").upper(),
             "super": True,

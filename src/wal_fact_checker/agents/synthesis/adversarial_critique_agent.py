@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from google.adk import Agent
 
-from ...core.tools import load_memory_tool
+from ...core.models import CritiqueOutput
 
 MODEL = "gemini-2.0-flash"
 
@@ -20,9 +20,17 @@ adversarial_critique_agent = Agent(
     CONTRADICTIONS: "Does evidence for Claim 1 contradict evidence for Claim 3?"
     MISSED NUANCE: "Is 'Verified' too strong? Should it be 'Partially True'?"
     
+    Return structured JSON with identified_issues (list of problems found), 
+    revised_verdicts (improved fact-check verdicts), strengthened_methodology, 
+    and final_assessment.
+    
     Rewrite the draft to address criticisms, strengthen arguments, clarify nuance.
     Ensure all conclusions are robustly supported by gathered evidence.
     """,
     description="Adversarial critic that refines and strengthens fact-check reports",
-    tools=[load_memory_tool],
+    # tools=[load_memory_tool],
+    output_schema=CritiqueOutput,
+    output_key="critique_result",
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )

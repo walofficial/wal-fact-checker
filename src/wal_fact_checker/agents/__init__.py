@@ -3,6 +3,6 @@
 
 from __future__ import annotations
 
-from .fact_check_orchestrator import root_agent
+from .fact_check_orchestrator import fact_check_orchestrator
 
-__all__ = ["root_agent"]
+__all__ = ["fact_check_orchestrator"]

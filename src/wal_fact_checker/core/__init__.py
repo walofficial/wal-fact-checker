@@ -1,33 +1,7 @@
-"""Core components for the WAL Fact Checker system."""
+# File: src/wal_fact_checker/core/__init__.py
+"""Core module initialization with logging setup."""
 
-from .base_agent import BaseAgent
-from .exceptions import (
-    AgentError,
-    FactCheckError,
-    ResearchError,
-    VerificationError,
-)
-from .models import (
-    AgentConfig,
-    ClaimAnalysis,
-    FactCheckRequest,
-    FactCheckResponse,
-    ResearchResult,
-    SystemConfig,
-    VerificationReport,
-)
+from .logging_config import setup_logging
 
-__all__ = [
-    "BaseAgent",
-    "FactCheckRequest",
-    "FactCheckResponse",
-    "ClaimAnalysis",
-    "ResearchResult",
-    "VerificationReport",
-    "AgentConfig",
-    "SystemConfig",
-    "FactCheckError",
-    "AgentError",
-    "ResearchError",
-    "VerificationError",
-]
+# Initialize logging when the core module is imported
+setup_logging()
