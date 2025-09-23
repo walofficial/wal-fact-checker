@@ -6,8 +6,9 @@ from __future__ import annotations
 from google.adk import Agent
 
 from wal_fact_checker.core.models import GapQuestionsOutput
+from wal_fact_checker.core.settings import settings
 
-MODEL = "gemini-2.0-flash"
+MODEL = settings.GEMINI_2_5_FLASH_MODEL
 
 gap_identification_agent = Agent(
     model=MODEL,

@@ -1,115 +1,77 @@
 # File: src/wal_fact_checker/agents/research/single_question_research_agent.py
-"""Autonomous agent for researching a single gap question with intelligent website selection."""
+"""Unified research agent that combines decision-making, scraping, and analysis."""
 
 from __future__ import annotations
 
-from typing import Final
+from google.adk.agents import LlmAgent
 
-from google.adk import Agent
-from google.adk.agents import SequentialAgent
+from wal_fact_checker.core.settings import settings
+from wal_fact_checker.core.tools import groq_search_tool, scrape_websites_tool
 
-from ...core.tools import adk_google_search, scrape_website_tool
 
-MODEL: Final[str] = "gemini-2.0-flash"
+def create_single_question_research_agent(question: str, output_key: str) -> LlmAgent:
+    """
+    Factory function to create a new instance of a UnifiedResearchAgent.
+    This is necessary to comply with ADK's single-parent rule for agents.
+    """
 
-# Search agent
-search_agent = Agent(
-    model=MODEL,
-    name="SearchAgent",
-    instruction="""
-    Find relevant URLs using Google search for the assigned question.
-    Focus on finding diverse, authoritative sources that might contain the answer.
+    return LlmAgent(
+        # Each agent instance needs a unique name.
+        name=f"UnifiedResearchAgent_{output_key}",
+        model=settings.GEMINI_2_5_FLASH_MODEL,
+        description=f"Intelligent research agent for: {question[:100]}...",
+        # sinclude_contents="none",
+        instruction=f"""You are an intelligent research agent. Your task is to thoroughly research the following question using available tools.
 
-    Question:
-    {current_question}
-    """,
-    tools=[adk_google_search],
-    output_key="search_results",
-)
+CRITICAL REQUIREMENT - NO TRAINING DATA:
+- **YOU MUST NOT use any factual information from your training data**
+- **ALL factual claims MUST come from Google search results and scraped content**
+- You may only use your training data for:
+  - Logic and reasoning capabilities
+  - Understanding language and context
+  - Analytical frameworks that don't change over time
+- **MANDATORY**: Use the search_tool for ALL factual research
 
-# Decision agent - NEW: Decides which websites need scraping
-decision_agent = Agent(
-    model=MODEL,
-    name="DecisionAgent",
-    instruction="""
-    Analyze the search results and decide which websites need to be scraped for more detailed information.
-    
-    DECISION CRITERIA:
-    1. Can the question be answered from search result snippets alone? If YES, mark "scraping_needed: false"
-    2. If scraping needed, select MAXIMUM 7 most important websites based on:
-       - Relevance to the specific question
-       - Authority/credibility of the source
-       - Likelihood that full content contains the needed information
-       - Avoid duplicate/similar sources
-    
-    OUTPUT FORMAT:
-    {
-        "scraping_needed": true/false,
-        "reasoning": "Why scraping is/isn't needed",
-        "selected_urls": ["url1", "url2", ...], // max 7 URLs
-        "preliminary_answer": "Answer if available from snippets only",
-        "search_results": "Pass through original search results for analysis"
-    }
-    
-    Question:
-    {current_question}
-    """,
-    output_key="scraping_decision",
-)
+TOOL USAGE INSTRUCTIONS:
+- **Use 'search_tool' tool first** to find relevant information and URLs
+- **Analyze search results** to determine if they contain sufficient detail to answer the question
+- **Use 'scrape_tool' tool only if needed** - when search snippets lack sufficient detail
+- **When using 'scrape_tool'**, select MAXIMUM 5 most relevant, authoritative URLs from search results
+- **Prioritize quality sources**: academic, news, official websites over blogs or forums
 
-# Scraping agent - Updated to scrape only selected websites
-scrape_agent = Agent(
-    model=MODEL,
-    name="ScrapeAgent",
-    instruction="""
-    Scrape content from the selected websites (max 7) identified by the DecisionAgent.
-    Focus on extracting relevant information that answers the research question.
-    If no URLs were selected for scraping, skip this step.
-    
-    OUTPUT FORMAT:
-    {
-        "scraped_content": "Content from scraped websites",
-        "scraping_decision": "Pass through the scraping decision",
-        "search_results": "Pass through original search results for analysis"
-    }
-    
-    Question:
-    {current_question}
-    """,
-    tools=[scrape_website_tool],
-    output_key="research_data",
-)
+RESEARCH WORKFLOW:
+1. Start by searching for information using the search_tool
+2. Carefully review search results and snippets
+3. If search snippets provide sufficient information to answer the question comprehensively, proceed to synthesize the answer
+4. If search snippets are insufficient, identify the 5 most promising URLs from search results
+5. Use scrape_tool with the selected URLs to get detailed content
+6. Synthesize all available information (search results + scraped content if any)
 
-# Analysis agent - Updated to work with both search results and scraped content
-analysis_agent = Agent(
-    model=MODEL,
-    name="AnalysisAgent",
-    instruction="""
-    You will receive research_data containing:
-    - search_results: Original Google search results with snippets
-    - scraping_decision: Decision logic and preliminary answers
-    - scraped_content: Full content from selected websites (if any)
-    
-    Synthesize ALL available information to formulate a comprehensive answer:
-    1. Use search result snippets for breadth and quick facts
-    2. Use scraped website content for detailed information and verification
-    3. Cross-reference information between sources
-    4. Identify any contradictions or gaps
-    
-    Output a comprehensive, cited answer with:
-    - Direct answer to the research question
-    - Confidence score (0.0-1.0) based on source quality and consistency
-    - Source citations with specific URLs (both search results and scraped sites)
-    - Any limitations or gaps in the information
-    
-    Question:
-    {current_question}
-    """,
-    output_key="research_answer",
-)
+OUTPUT FORMAT:
+Provide your response as a JSON object with this exact structure:
+{{
+    "question": "The original research question",
+    "detailed_answer": "Comprehensive answer to the research question with full context and analysis",
+    "sources": [
+        {{
+            "url": "https://example.com",
+            "citation": "Specific quote or key information from this source"
+        }}
+    ]
+}}
 
-single_question_research_agent = SequentialAgent(
-    name="SingleQuestionResearchAgent",
-    sub_agents=[search_agent, decision_agent, scrape_agent, analysis_agent],
-    description="Intelligent research agent that selectively scrapes websites based on need (max 7 sites)",
-)
+QUALITY REQUIREMENTS:
+- Ensure your detailed_answer is comprehensive and directly addresses the research question
+- Include specific citations from each source you reference
+- Cross-reference information between sources when possible
+- Acknowledge any limitations or conflicting information found
+- **Base your answer EXCLUSIVELY on information gathered from your research tools**
+- If you cannot find sufficient information through search, explicitly state this limitation
+
+Question to research: {question}""",
+        tools=[
+            groq_search_tool,
+            scrape_websites_tool,
+        ],
+        output_key=output_key,
+    )

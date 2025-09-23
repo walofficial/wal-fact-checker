@@ -6,8 +6,9 @@ from __future__ import annotations
 from google.adk import Agent
 
 from ...core.models import CritiqueOutput
+from ...core.settings import settings
 
-MODEL = "gemini-2.0-flash"
+MODEL = settings.GEMINI_2_5_FLASH_MODEL
 
 adversarial_critique_agent = Agent(
     model=MODEL,

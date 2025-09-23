@@ -41,6 +41,13 @@ class AppSettings(BaseSettings):
         default=10000, description="Maximum content length for processing"
     )
 
+    groq_api_key: str = Field(default="", description="Groq API key")
+
+    # Model configuration
+    GEMINI_2_5_FLASH_MODEL: str = Field(
+        default="gemini-2.5-flash", description="Gemini 2.5 Flash model name"
+    )
+
     @classmethod
     def settings_customise_sources(
         cls,

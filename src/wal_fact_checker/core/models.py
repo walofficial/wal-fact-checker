@@ -107,17 +107,33 @@ class GapQuestionsOutput(BaseModel):
     )
 
 
+class ReferenceOutput(BaseModel):
+    """Pydantic schema for evidence reference."""
+
+    is_supportive: bool = Field(
+        description="Whether this reference supports or refutes the claim"
+    )
+    citation: str = Field(
+        description="Specific quote or key information from the source"
+    )
+    url: str = Field(description="URL of the source")
+
+
 class FactCheckVerdictOutput(BaseModel):
     """Pydantic schema for fact check verdict."""
 
     claim_id: str = Field(description="ID of the claim being evaluated")
+    claim_text: str = Field(description="The original claim text being evaluated")
     verdict: str = Field(
         description="Verdict: verified, false, partially_true, or insufficient_evidence"
     )
     confidence: float = Field(ge=0.0, le=1.0, description="Confidence in the verdict")
-    supporting_evidence: list[str] = Field(description="List of supporting evidence")
-    refuting_evidence: list[str] = Field(description="List of refuting evidence")
-    nuance: str | None = Field(default=None, description="Additional nuance or context")
+    argumentative_explanation: str = Field(
+        description="Detailed argumentative explanation of the verdict with reasoning"
+    )
+    references: list[ReferenceOutput] = Field(
+        description="List of references with supportive/refuting indicators"
+    )
 
 
 class DraftReportOutput(BaseModel):
@@ -142,3 +158,16 @@ class CritiqueOutput(BaseModel):
         description="Improved methodology description"
     )
     final_assessment: str = Field(description="Final overall assessment")
+
+
+class ScrapeInput(BaseModel):
+    """Pydantic schema for scrape input."""
+
+    urls: list[str] = Field(description="List of URLs to scrape")
+
+
+class ScrapeOutput(BaseModel):
+    """Pydantic schema for scrape output."""
+
+    combined_content: str = Field(description="Combined content from all scraped URLs")
+    status: str = Field(description="Status of the scrape operation")
