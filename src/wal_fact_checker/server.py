@@ -22,9 +22,9 @@ from google.cloud import logging as google_cloud_logging
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider, export
 
-from wal_fact_checkerutils.gcs import create_bucket_if_not_exists
-from wal_fact_checkerutils.tracing import CloudTraceLoggingSpanExporter
-from wal_fact_checkerutils.typing import Feedback
+from wal_fact_checker.utils.gcs import create_bucket_if_not_exists
+from wal_fact_checker.utils.tracing import CloudTraceLoggingSpanExporter
+from wal_fact_checker.utils.typing import Feedback
 
 _, project_id = google.auth.default()
 logging_client = google_cloud_logging.Client()

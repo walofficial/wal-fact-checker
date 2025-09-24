@@ -1,32 +1,27 @@
-# Copyright 2025 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm
 
-FROM python:3.11-slim
+WORKDIR /app
 
-RUN pip install --no-cache-dir uv==0.6.12
+ENV UV_COMPILE_BYTECODE=1
 
-WORKDIR /code
+ENV UV_LINK_MODE=copy
 
-COPY ./pyproject.toml ./README.md ./uv.lock* ./
+# Set environment variables for better async performance
+ENV PYTHONUNBUFFERED=1
+ENV ASYNCIO_DEBUG=0
 
-COPY ./src/wal_fact_checker ./src/wal_fact_checker
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
 
-RUN uv sync --frozen
+ADD . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
-ARG COMMIT_SHA=""
-ENV COMMIT_SHA=${COMMIT_SHA}
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH="$PYTHONPATH:/app/src"
 
 EXPOSE 8080
 
-CMD ["uv", "run", "uvicorn", "src.wal_fact_checker.a2a:a2a_app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uv", "run", "uvicorn", "wal_fact_checker.a2a:a2a_app", "--host", "0.0.0.0", "--port", "8080"]
