@@ -56,16 +56,8 @@ async def _scrape_single_website(
             "status": "success",
             "content_length": len(content),
         }
-    except httpx.HTTPStatusError as e:
-        return {
-            "url": url,
-            "error": f"HTTP {e.response.status_code}: {e.response.text}",
-            "content": "",
-            "status": "error",
-            "status_code": e.response.status_code,
-            "api_used": "scrape.do",
-        }
     except Exception as e:
+        logger.exception("Error in _scrape_single_website")
         return {
             "url": url,
             "error": str(e),

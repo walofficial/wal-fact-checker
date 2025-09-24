@@ -7,7 +7,7 @@ from google.adk.agents import SequentialAgent
 
 from .analysis import claim_structuring_agent, gap_identification_agent
 from .research import research_orchestrator_agent
-from .synthesis import adversarial_critique_agent, evidence_synthesizer_agent
+from .synthesis import evidence_adjudicator_agent
 
 # Stage 1: Analysis & Strategy (Sequential)
 analysis_stage = SequentialAgent(
@@ -25,14 +25,7 @@ research_stage = (
 )
 
 # Stage 3: Synthesis & Verification (Sequential)
-synthesis_stage = SequentialAgent(
-    name="SynthesisStage",
-    sub_agents=[
-        evidence_synthesizer_agent,  # comprehensive_answer_set -> draft_report
-        adversarial_critique_agent,  # draft_report -> final_report
-    ],
-    description="Synthesizes evidence and applies adversarial critique",
-)
+synthesis_stage = evidence_adjudicator_agent
 
 # Main orchestrator: Analysis -> Research -> Synthesis
 fact_check_orchestrator = SequentialAgent(

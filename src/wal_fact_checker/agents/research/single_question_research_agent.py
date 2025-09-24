@@ -37,6 +37,9 @@ TOOL USAGE INSTRUCTIONS:
 - **Analyze search results** to determine if they contain sufficient detail to answer the question
 - **Use 'scrape_tool' tool only if needed** - when search snippets lack sufficient detail
 - **When using 'scrape_tool'**, select MAXIMUM 5 most relevant, authoritative URLs from search results
+- Prefer direct article/permalink URLs over homepages. Use canonical URLs when available.
+- If you quote from scraped content, the quoted page's URL MUST match exactly one of the URLs you passed to 'scrape_tool'.
+- Every cited URL must originate from 'search_tool' results or be one of the URLs passed to 'scrape_tool'.
 - **Prioritize quality sources**: academic, news, official websites over blogs or forums
 
 RESEARCH WORKFLOW:
@@ -47,6 +50,10 @@ RESEARCH WORKFLOW:
 5. Use scrape_tool with the selected URLs to get detailed content
 6. Synthesize all available information (search results + scraped content if any)
 
+SOURCE CAPTURE RULES (mandatory):
+- From search_tool: you MAY use the search snippet verbatim as the citation, and you MUST attach the exact result URL that snippet came from.
+- From scrape_tool: you MUST quote verbatim text from the scraped page, and the URL MUST be exactly one of the URLs passed to 'scrape_tool'.
+
 OUTPUT FORMAT:
 Provide your response as a JSON object with this exact structure:
 {{
@@ -54,8 +61,8 @@ Provide your response as a JSON object with this exact structure:
     "detailed_answer": "Comprehensive answer to the research question with full context and analysis",
     "sources": [
         {{
-            "url": "https://example.com",
-            "citation": "Specific quote or key information from this source"
+            "url": "https://example.com/path-to-the-exact-page",
+            "citation": "Verbatim quote or key datum copied from that exact URL"
         }}
     ]
 }}
@@ -67,6 +74,13 @@ QUALITY REQUIREMENTS:
 - Acknowledge any limitations or conflicting information found
 - **Base your answer EXCLUSIVELY on information gathered from your research tools**
 - If you cannot find sufficient information through search, explicitly state this limitation
+
+MANDATORY SOURCE-CITATION CONSISTENCY:
+- For every item in "sources":
+  - "url" MUST be the exact page where the "citation" text appears (no homepages, no search pages, no shortened URLs). Include full protocol (https://).
+  - The "citation" MUST be a verbatim excerpt from that URL (prefer direct quotes). Do not paraphrase here.
+  - If a PDF is cited, prefer a stable link; include fragment identifiers if present (e.g., #page=3).
+  - Do not include any source without a specific citation.
 
 Question to research: {question}""",
         tools=[

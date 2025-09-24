@@ -6,9 +6,9 @@ from __future__ import annotations
 import logging
 from typing import AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent, LlmAgent, ParallelAgent
+from google.adk.agents import BaseAgent, ParallelAgent, SequentialAgent
 from google.adk.agents.invocation_context import InvocationContext
-from google.adk.events import Event
+from google.adk.events import Event, EventActions
 
 from wal_fact_checker.core.models import GapQuestionsOutput
 from wal_fact_checker.core.settings import settings
@@ -30,6 +30,33 @@ class ResearchOrchestratorAgent(BaseAgent):
         super().__init__(name="ResearchOrchestratorAgent")
         logger.debug(f"Initialized {self.name}")
 
+    def _create_batch_parallel_agents(
+        self, questions: list[str], batch_size: int
+    ) -> list[ParallelAgent]:
+        """Create ParallelAgent instances for batched question processing."""
+        question_batches = [
+            questions[i : i + batch_size] for i in range(0, len(questions), batch_size)
+        ]
+
+        batch_parallel_agents: list[ParallelAgent] = []
+
+        for batch_idx, batch_questions in enumerate(question_batches):
+            batch_worker_agents = [
+                create_single_question_research_agent(
+                    question=question,
+                    output_key=f"research_answer_{batch_idx * batch_size + q_idx}",
+                )
+                for q_idx, question in enumerate(batch_questions)
+            ]
+
+            batch_parallel_agent = ParallelAgent(
+                name=f"SingleBatchBatchResearchAgent_{batch_idx}",
+                sub_agents=batch_worker_agents,
+            )
+            batch_parallel_agents.append(batch_parallel_agent)
+
+        return batch_parallel_agents
+
     async def _run_async_impl(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
@@ -45,35 +72,33 @@ class ResearchOrchestratorAgent(BaseAgent):
             questions = [item.question for item in gap_questions_output.gap_questions]
 
         if not questions:
-            # Handle the case where the previous agent failed to produce output.
-            # In a production system, you might yield an error event here.
-            print("Error: 'gap_questions' not found in session state.")
-            return
-
-        # Step 2: Dynamically create a worker agent for each question.
-        worker_agents: list[LlmAgent] = []
-        for i, question in enumerate(questions):
-            output_key = f"research_answer_{i}"
-            worker = create_single_question_research_agent(
-                question=question, output_key=output_key
+            logger.error(
+                f"[{ctx.invocation_id}] {self.name}: No gap questions found in session state"
             )
-            worker_agents.append(worker)
-
-        if not worker_agents:
-            print("No worker agents created, skipping parallel execution.")
             return
 
-        # Step 3: Create a ParallelAgent on the fly with the new workers.
-        parallel_workflow = ParallelAgent(
-            name="GapQuestionResearchWorkflowParallelAgent",
-            sub_agents=worker_agents,
+        # Step 2: Create batched parallel workflow
+        batch_size = 5
+        batch_parallel_agents = self._create_batch_parallel_agents(
+            questions, batch_size
         )
 
-        self.sub_agents.append(parallel_workflow)
+        if not batch_parallel_agents:
+            logger.warning(
+                f"[{ctx.invocation_id}] {self.name}: No batch agents created"
+            )
+            return
 
-        # Step 4: Execute the parallel workflow and yield its events.
-        # This is crucial for maintaining observability.
-        async for event in parallel_workflow.run_async(ctx):
+        # Step 3: Create sequential workflow to orchestrate batches
+        sequential_workflow = SequentialAgent(
+            name="BatchSequentialResearchAgent",
+            sub_agents=batch_parallel_agents,
+        )
+
+        self.sub_agents.append(sequential_workflow)
+
+        # Step 4: Execute the sequential workflow and yield its events
+        async for event in sequential_workflow.run_async(ctx):
             yield event
 
         research_answers: list[dict] = []
@@ -92,6 +117,13 @@ class ResearchOrchestratorAgent(BaseAgent):
         )
 
         ctx.session.state["research_answers"] = research_answers
+
+        state_update_event = Event(
+            invocation_id=ctx.invocation_id,
+            author=self.name,
+            actions=EventActions(state_delta={"research_answers": research_answers}),
+        )
+        yield state_update_event
 
 
 research_orchestrator_agent = ResearchOrchestratorAgent()
