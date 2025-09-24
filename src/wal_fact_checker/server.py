@@ -23,7 +23,6 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider, export
 
 from wal_fact_checkerutils.gcs import create_bucket_if_not_exists
-from wal_fact_checkerutils.gsm import ensure_env_from_secret
 from wal_fact_checkerutils.tracing import CloudTraceLoggingSpanExporter
 from wal_fact_checkerutils.typing import Feedback
 
@@ -43,10 +42,6 @@ provider = TracerProvider()
 processor = export.BatchSpanProcessor(CloudTraceLoggingSpanExporter())
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
-
-# Ensure external API keys are available from Secret Manager if not in env
-ensure_env_from_secret("SCRAPE_DO_API_KEY", "scrape_do_token")
-ensure_env_from_secret("GROQ_API_KEY", "groq_key")
 
 AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # In-memory session configuration - no persistent storage
