@@ -37,7 +37,7 @@ class AppSettings(BaseSettings):
         default=10000, description="Maximum content length for processing"
     )
 
-    groq_api_key: str = Field(default="", description="Groq API key")
+    groq_key: str = Field(default="", description="Groq API key")
 
     google_api_key: str = Field(alias="gcp_genai_key", default="", description="Google API key")
 

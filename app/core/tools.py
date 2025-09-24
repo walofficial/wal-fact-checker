@@ -15,8 +15,7 @@ from groq import AsyncGroq
 from .settings import settings
 
 logger = logging.getLogger(__name__)
-
-groq_client = AsyncGroq(api_key=settings.groq_api_key)
+groq_client = AsyncGroq(api_key=settings.groq_key)
 
 
 async def _scrape_single_website(
