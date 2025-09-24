@@ -14,7 +14,7 @@ playground:
 	uv run adk web . --port 8501 --reload_agents
 
 # Deploy the agent remotely
-# Usage: make backend [IAP=true] [PORT=8080] - Set IAP=true to enable Identity-Aware Proxy, PORT to specify container port
+# Usage: make backend [IAP=true] [PORT=8080] [SERVICE_ACCOUNT=email] - Set IAP=true to enable Identity-Aware Proxy, PORT to specify container port
 backend:
 	PROJECT_ID=$$(gcloud config get-value project) && \
 	gcloud beta run deploy walfactchecker \
@@ -22,11 +22,11 @@ backend:
 		--memory "4Gi" \
 		--project $$PROJECT_ID \
 		--region "us-central1" \
-		--no-allow-unauthenticated \
 		--no-cpu-throttling \
+		--service-account "$${SERVICE_ACCOUNT:-deep-research-service@feisty-wall-394014.iam.gserviceaccount.com}" \
 		--labels "created-by=adk" \
 		--set-env-vars \
-		"COMMIT_SHA=$(shell git rev-parse HEAD)" \
+		"COMMIT_SHA=$(shell git rev-parse HEAD),LANGFUSE_TRACING_ENVIRONMENT=production, SCRAPE_DO_BASE_URL=https://api.scrape.do" \
 		$(if $(IAP),--iap) \
 		$(if $(PORT),--port=$(PORT))
 
