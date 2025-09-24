@@ -1,4 +1,4 @@
-# File: src/wal_fact_checker/agents/research/research_orchestrator_agent.py
+# File: src/app/agents/research/research_orchestrator_agent.py
 """Orchestrator agent that manages parallel research of gap questions."""
 
 from __future__ import annotations
@@ -10,8 +10,8 @@ from google.adk.agents import BaseAgent, ParallelAgent, SequentialAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
 
-from wal_fact_checker.core.models import GapQuestionsOutput
-from wal_fact_checker.core.settings import settings
+from app.core.models import GapQuestionsOutput
+from app.core.settings import settings
 
 from .single_question_research_agent import (
     create_single_question_research_agent,

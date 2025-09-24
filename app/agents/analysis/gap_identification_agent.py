@@ -1,12 +1,12 @@
-# File: src/wal_fact_checker/agents/analysis/gap_identification_agent.py
+# File: src/app/agents/analysis/gap_identification_agent.py
 """Agent for identifying critical gaps and weaknesses in claims."""
 
 from __future__ import annotations
 
 from google.adk import Agent
 
-from wal_fact_checker.core.models import GapQuestionsOutput
-from wal_fact_checker.core.settings import settings
+from app.core.models import GapQuestionsOutput
+from app.core.settings import settings
 
 MODEL = settings.GEMINI_2_5_FLASH_MODEL
 

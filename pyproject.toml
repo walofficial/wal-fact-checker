@@ -1,128 +1,99 @@
 [build-system]
-requires = ["uv_build>=0.8.17,<0.9.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
-name = "wal-fact-checker"
+name = "walfactchecker"
 version = "0.1.0"
-description = "An advanced multi-agent fact-checking system with hierarchical analysis and adversarial critique"
-readme = "README.md"
-requires-python = ">=3.13"
-
-# Core dependencies for the fact-checking system
+description = ""
+authors = [{ name = "Your Name", email = "your@email.com" }]
 dependencies = [
-    "pydantic>=2.0.0",
-    "pydantic-settings[gcp-secret-manager]>=2.0.0",
-    "asyncio-throttle>=1.0.0",
-    "httpx>=0.25.0",
-    "beautifulsoup4>=4.12.0",
-    "python-dateutil>=2.8.0",
-    "structlog>=23.0.0",
-    "typer>=0.9.0",
-    "rich>=13.0.0",
-    "jinja2>=3.1.0",
-    "google-adk>=1.14.1",
-    "python-dotenv>=1.1.1",
+    "google-adk~=1.14.0",
+    "langfuse>=2.53.0",
+    "openinference-instrumentation-google-adk<=0.1.4",
+    "opentelemetry-exporter-gcp-trace~=1.9.0",
+    "google-cloud-logging~=3.11.4",
+    "google-cloud-secret-manager>=2.20.0",
+    "google-cloud-aiplatform~=1.112.0",
+    "fastapi~=0.115.8",
+    "uvicorn~=0.34.0",
+    "psycopg2-binary>=2.9.10",
+    "requests>=2.32.0",
+    "pydantic>=2.9.0",
     "groq>=0.31.1",
+    "structlog>=23.0.0",
 ]
+requires-python = ">=3.10,<3.14"
+
+[dependency-groups]
+dev = ["pytest>=8.3.4", "pytest-asyncio>=0.23.8", "nest-asyncio>=1.6.0"]
 
 [project.optional-dependencies]
-# Development dependencies
-dev = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "flake8>=6.0.0",
-    "mypy>=1.5.0",
-    "pre-commit>=3.0.0",
-]
-
-# Documentation dependencies
-docs = [
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-    "mkdocs-mermaid2-plugin>=1.0.0",
-]
-
-# Testing with additional tools
-testing = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.0.0",
-    "pytest-mock>=3.11.0",
-    "factory-boy>=3.3.0",
-    "faker>=19.0.0",
-]
-
-# Production deployment
-production = [
-    "uvicorn[standard]>=0.23.0",
-    "gunicorn>=21.0.0",
+jupyter = ["jupyter~=1.0.0"]
+lint = [
+    "ruff>=0.4.6",
+    "mypy~=1.15.0",
+    "codespell~=2.2.0",
+    "types-pyyaml~=6.0.12.20240917",
+    "types-requests~=2.32.0.20240914",
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/wal-fact-checker"
-Documentation = "https://wal-fact-checker.readthedocs.io"
-Repository = "https://github.com/yourusername/wal-fact-checker.git"
-"Bug Tracker" = "https://github.com/yourusername/wal-fact-checker/issues"
-Changelog = "https://github.com/yourusername/wal-fact-checker/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/yourusername/walfactchecker"
+Documentation = "https://walfactchecker.readthedocs.io"
+Repository = "https://github.com/yourusername/walfactchecker.git"
+"Bug Tracker" = "https://github.com/yourusername/walfactchecker/issues"
+Changelog = "https://github.com/yourusername/walfactchecker/blob/main/CHANGELOG.md"
 
 [project.scripts]
-fact-check = "wal_fact_checker.cli:main"
-wal-checker = "wal_fact_checker.cli:main"
+realitycheck = "app.cli:main"
 
-[tool.uv]
-# Cache configuration for dynamic metadata
-cache-keys = [
-    { file = "pyproject.toml" },
-    { git = { commit = true } }
-]
-
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ["py313"]
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
+target-version = "py310"
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-known_first_party = ["wal_fact_checker"]
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "RUF", # ruff specific rules
+]
+ignore = ["E501", "C901"] # ignore line too long, too complex
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "frontend"]
 
 [tool.mypy]
-python_version = "3.13"
-warn_return_any = true
-warn_unused_configs = true
+python_version = "3.10"
+disallow_untyped_calls = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
 no_implicit_optional = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+warn_incomplete_stub = true
 warn_redundant_casts = true
 warn_unused_ignores = true
-warn_no_return = true
 warn_unreachable = true
-strict_equality = true
+follow_imports = "silent"
+ignore_missing_imports = true
+explicit_package_bases = true
+disable_error_code = ["misc", "no-untyped-call", "no-any-return"]
+exclude = [".venv"]
+
+[tool.codespell]
+ignore-words-list = "rouge"
+skip = "./locust_env/*,uv.lock,.venv,./frontend,**/*.ipynb"
 
 [tool.pytest.ini_options]
-minversion = "7.0"
+minversion = "8.0"
+pythonpath = "."
+asyncio_default_fixture_loop_scope = "function"
 addopts = "-ra -q --strict-markers --strict-config"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
@@ -133,12 +104,13 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "agent: marks tests related to agent functionality",
-    "research: marks tests related to research functionality",
-    "critique: marks tests related to critique functionality",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["app", "frontend"]
+
 [tool.coverage.run]
-source = ["wal_fact_checker"]
+source = ["app"]
 omit = [
     "*/tests/*",
     "*/test_*",

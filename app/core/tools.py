@@ -42,7 +42,7 @@ async def _scrape_single_website(
             "render": True,
         }
 
-        response = await client.get(settings.scrape_api_url, params=params)
+        response = await client.get("https://api.scrape.do", params=params)
         response.raise_for_status()
 
         # Get the markdown content from scrape.do

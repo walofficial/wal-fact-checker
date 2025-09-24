@@ -1,12 +1,12 @@
-# File: src/wal_fact_checker/agents/analysis/claim_structuring_agent.py
+# File: src/app/agents/analysis/claim_structuring_agent.py
 """Agent for structuring free-form text into atomic, verifiable claims."""
 
 from __future__ import annotations
 
 from google.adk import Agent
 
-from wal_fact_checker.core.models import StructuredClaimsOutput
-from wal_fact_checker.core.settings import settings
+from app.core.models import StructuredClaimsOutput
+from app.core.settings import settings
 
 MODEL = settings.GEMINI_2_5_FLASH_MODEL
 
