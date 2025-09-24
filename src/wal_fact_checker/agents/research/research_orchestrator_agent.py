@@ -1,4 +1,4 @@
-# File: src/app/agents/research/research_orchestrator_agent.py
+# File: src/wal_fact_checker/agents/research/research_orchestrator_agent.py
 """Orchestrator agent that manages parallel research of gap questions."""
 
 from __future__ import annotations

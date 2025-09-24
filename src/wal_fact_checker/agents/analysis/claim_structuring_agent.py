@@ -1,4 +1,4 @@
-# File: src/app/agents/analysis/claim_structuring_agent.py
+# File: src/wal_fact_checker/agents/analysis/claim_structuring_agent.py
 """Agent for structuring free-form text into atomic, verifiable claims."""
 
 from __future__ import annotations

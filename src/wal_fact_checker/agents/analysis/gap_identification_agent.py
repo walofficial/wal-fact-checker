@@ -1,4 +1,4 @@
-# File: src/app/agents/analysis/gap_identification_agent.py
+# File: src/wal_fact_checker/agents/analysis/gap_identification_agent.py
 """Agent for identifying critical gaps and weaknesses in claims."""
 
 from __future__ import annotations
