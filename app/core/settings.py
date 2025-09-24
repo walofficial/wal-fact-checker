@@ -42,8 +42,8 @@ class AppSettings(BaseSettings):
     google_api_key: str = Field(alias="gcp_genai_key", default="", description="Google API key")
 
     langfuse_host: str = Field(default="", description="Langfuse host")
-    langfuse_public_key: str = Field(default="", description="Langfuse public key")
-    langfuse_secret_key: str = Field(default="", description="Langfuse secret key")
+    langfuse_public_key: str = Field(default="", description="Langfuse public key", alias="factchecker_langfuse_public_key")
+    langfuse_secret_key: str = Field(default="", description="Langfuse secret key", alias="factchecker_langfuse_secret_key")
     langfuse_tracing_environment: str = Field(default="", description="Langfuse tracing environment")
 
     # Model configuration

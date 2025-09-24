@@ -11,7 +11,7 @@ playground:
 	@echo "|                                                                             |"
 	@echo "| 🔍 IMPORTANT: Select the 'app' folder to interact with your agent.          |"
 	@echo "==============================================================================="
-	uv run adk web . --port 8501 --reload_agents
+	uv run adk web . --port 8502 --reload_agents
 
 # Deploy the agent remotely
 # Usage: make backend [IAP=true] [PORT=8080] [SERVICE_ACCOUNT=email] - Set IAP=true to enable Identity-Aware Proxy, PORT to specify container port
