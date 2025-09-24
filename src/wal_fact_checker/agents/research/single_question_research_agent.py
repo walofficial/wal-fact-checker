@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from google.adk.agents import LlmAgent
 
-from app.core.settings import settings
-from app.core.tools import groq_search_tool, scrape_websites_tool
+from wal_fact_checker.core.settings import settings
+from wal_fact_checker.core.tools import groq_search_tool, scrape_websites_tool
 
 
 def create_single_question_research_agent(question: str, output_key: str) -> LlmAgent:

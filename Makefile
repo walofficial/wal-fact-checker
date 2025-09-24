@@ -11,7 +11,7 @@ playground:
 	@echo "|                                                                             |"
 	@echo "| 🔍 IMPORTANT: Select the 'app' folder to interact with your agent.          |"
 	@echo "==============================================================================="
-	uv run adk web . --port 8502 --reload_agents
+	uv run adk web ./src --port 8502 --reload_agents
 
 # Deploy the agent remotely
 # Usage: make backend [IAP=true] [PORT=8080] [SERVICE_ACCOUNT=email] - Set IAP=true to enable Identity-Aware Proxy, PORT to specify container port
@@ -32,7 +32,7 @@ backend:
 
 # Launch local development server with hot-reload
 local-backend:
-	uv run uvicorn app.server:app --host 0.0.0.0 --port 8000 --reload
+	uv run uvicorn wal_fact_checkerserver:app --host 0.0.0.0 --port 8000 --reload
 
 # Set up development environment resources using Terraform
 setup-dev-env:

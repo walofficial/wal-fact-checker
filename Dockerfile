@@ -20,7 +20,7 @@ WORKDIR /code
 
 COPY ./pyproject.toml ./README.md ./uv.lock* ./
 
-COPY ./app ./app
+COPY ./src/wal_fact_checker ./src/wal_fact_checker
 
 RUN uv sync --frozen
 
@@ -29,4 +29,4 @@ ENV COMMIT_SHA=${COMMIT_SHA}
 
 EXPOSE 8080
 
-CMD ["uv", "run", "uvicorn", "app.a2a:a2a_app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uv", "run", "uvicorn", "src.wal_fact_checker.a2a:a2a_app", "--host", "0.0.0.0", "--port", "8080"]

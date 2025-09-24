@@ -10,8 +10,8 @@ from google.adk.agents import BaseAgent, ParallelAgent, SequentialAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
 
-from app.core.models import GapQuestionsOutput
-from app.core.settings import settings
+from wal_fact_checker.core.models import GapQuestionsOutput
+from wal_fact_checker.core.settings import settings
 
 from .single_question_research_agent import (
     create_single_question_research_agent,

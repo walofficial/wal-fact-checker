@@ -9,7 +9,7 @@ from typing import Final
 from langfuse import get_client
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
 
-from app.core.settings import settings
+from wal_fact_checker.core.settings import settings
 
 
 logger: Final = logging.getLogger(__name__)

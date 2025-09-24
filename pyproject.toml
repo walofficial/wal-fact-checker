@@ -47,7 +47,7 @@ Repository = "https://github.com/yourusername/walfactchecker.git"
 Changelog = "https://github.com/yourusername/walfactchecker/blob/main/CHANGELOG.md"
 
 [project.scripts]
-realitycheck = "app.cli:main"
+realitycheck = "wal_fact_checkercli:main"
 
 [tool.ruff]
 line-length = 88

@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from google.adk import Agent
 
-from app.core.models import GapQuestionsOutput
-from app.core.settings import settings
+from wal_fact_checker.core.models import GapQuestionsOutput
+from wal_fact_checker.core.settings import settings
 
 MODEL = settings.GEMINI_2_5_FLASH_MODEL
 
