@@ -40,4 +40,4 @@ def setup_logging() -> None:
     handler.setFormatter(formatter)
 
     root_logger.addHandler(handler)
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.INFO)

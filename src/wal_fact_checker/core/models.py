@@ -156,6 +156,14 @@ class EvidenceAdjudicatorOutput(BaseModel):
         le=1.0,
         description="Overall confidence score for the verdict (0.0–1.0)",
     )
+    headline_summary_md: str = Field(
+        description=(
+            "Reader-facing markdown summary for the main page. Up to three lines, "
+            "each optional, in this order: 'True — <one sentence>'; 'False — <one "
+            "sentence>'; 'Unverified — <one sentence>'. Omit any line with no "
+            "notable content. Keep it concise and non-speculative."
+        )
+    )
     what_was_true: list[SectionItemOutput] = Field(
         description="Claims determined true with brief justifications"
     )
@@ -201,3 +209,17 @@ class ScrapeOutput(BaseModel):
 
     combined_content: str = Field(description="Combined content from all scraped URLs")
     status: str = Field(description="Status of the scrape operation")
+
+
+class TransformationOutput(BaseModel):
+    """Output schema for report transformation agent."""
+
+    factuality: float = Field(description="Factuality score of the transformed report")
+    reason: str = Field(description="Detailed explanation of the fact checking")
+    reason_summary: str = Field(description="Summary explanation of the fact checking")
+    score_justification: str = Field(
+        description="Justification of the fact checking score"
+    )
+    references: list[ReferenceOutput] = Field(
+        description="List of references used in the fact checking"
+    )

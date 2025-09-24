@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from google.adk import Agent
+from google.genai.types import GenerateContentConfig
 
 from ...core.models import EvidenceAdjudicatorOutput
 from ...core.settings import settings
@@ -17,6 +18,7 @@ evidence_adjudicator_agent = Agent(
         "Primary fact-checking agent. Synthesizes provided research into a "
         "definitive report with rigorous argumentation and citations."
     ),
+    generate_content_config=GenerateContentConfig(temperature=0.0, top_k=1),
     include_contents="none",
     instruction="""You are the main fact-checking agent. Use ONLY the provided
 structured_claims and research_answers. Do not use outside knowledge or invent
@@ -38,10 +40,19 @@ CLAIM-LEVEL STATUS CRITERIA (for section placement):
 - Could not be verified: Evidence is missing, weak, contradictory, or only
   partially supports the claim; or data cannot be found.
 
-OUTPUT (must validate against DraftReportOutput):
+OUTPUT (must validate against EvidenceAdjudicatorOutput):
 - verdict: Overall judgment over the text. Choose one of:
   {mostly_true, mostly_false, mixed, unverified}.
 - confidence: Float in [0.0, 1.0] for the overall verdict.
+- headline_summary_md: A compact markdown string for the main page with a
+  fixed, consistent structure so users instantly know where to look.
+  Up to three lines (omit any line with nothing notable), each one sentence
+  max (≤30 words), no hedging, no citations, no URLs. Lines must appear in
+  this order when present:
+  1) "True — <concise takeaway summarizing the strongest true point>"
+  2) "False — <concise takeaway summarizing the key false point>"
+  3) "Unverified — <concise takeaway summarizing what couldn't be verified>"
+  Use an em dash (—). Do not include placeholder text for omitted lines.
 - what_was_true: List of items; each item has claim_id, claim_text,
   argumentative_explanation (concise, evidence-backed). Use bracketed
   citations like [1], [2] that refer to entries in the global references

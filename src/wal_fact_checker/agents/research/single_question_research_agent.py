@@ -3,10 +3,64 @@
 
 from __future__ import annotations
 
+import logging
+from typing import Any
+
 from google.adk.agents import LlmAgent
+from google.adk.tools import BaseTool, ToolContext
 
 from wal_fact_checker.core.settings import settings
 from wal_fact_checker.core.tools import groq_search_tool, scrape_websites_tool
+
+logger = logging.getLogger(__name__)
+
+MAX_NUMBER_OF_SEARCH_TOOL_CALLS = 5
+MAX_NUMBER_OF_SCRAPE_TOOL_CALLS = 3
+
+tool_max_calls: dict[str, int] = {
+    "search_tool": MAX_NUMBER_OF_SEARCH_TOOL_CALLS,
+    "scrape_tool": MAX_NUMBER_OF_SCRAPE_TOOL_CALLS,
+}
+
+
+def enforce_tool_call_limits(
+    tool: BaseTool, args: dict[str, Any], tool_context: ToolContext
+) -> dict[str, Any] | None:
+    """Inspects/modifies tool args or skips the tool call."""
+    agent_name = tool_context.agent_name
+    tool_name = tool.name
+
+    key = f"{agent_name}_{tool_name}_calls"
+    number_of_calls = tool_context.state.get(key, 0)
+
+    max_number_of_calls = tool_max_calls.get(tool_name, 0)
+
+    if number_of_calls >= max_number_of_calls:
+        logger.warning(
+            "[Callback] Detected 'BLOCK'. Skipping tool execution.",
+            extra={
+                "json_fields": {
+                    "agent_name": agent_name,
+                    "tool_name": tool_name,
+                    "number_of_calls": number_of_calls,
+                    "max_number_of_calls": max_number_of_calls,
+                }
+            },
+        )
+        return {"status": "error", "message": f"{tool_name} call limit reached"}
+
+    tool_context.state[key] = number_of_calls + 1
+    logger.info(
+        "[Callback] Tool call limit enforced.",
+        extra={
+            "json_fields": {
+                "agent_name": agent_name,
+                "tool_name": tool_name,
+                "number_of_calls": number_of_calls + 1,
+            }
+        },
+    )
+    return None
 
 
 def create_single_question_research_agent(question: str, output_key: str) -> LlmAgent:
@@ -87,5 +141,6 @@ Question to research: {question}""",
             groq_search_tool,
             scrape_websites_tool,
         ],
+        before_tool_callback=enforce_tool_call_limits,
         output_key=output_key,
     )
