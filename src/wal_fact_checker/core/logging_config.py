@@ -5,13 +5,8 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Final
 
 import structlog
-
-# Log format based on ADK documentation best practices
-LOG_FORMAT: Final[str] = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-DATE_FORMAT: Final[str] = "%Y-%m-%d %H:%M:%S"
 
 
 def setup_logging() -> None:

@@ -43,7 +43,7 @@ CLAIM-LEVEL STATUS CRITERIA (for section placement):
 OUTPUT (must validate against EvidenceAdjudicatorOutput):
 - verdict: Overall judgment over the text. Choose one of:
   {mostly_true, mostly_false, mixed, unverified}.
-- confidence: Float in [0.0, 1.0] for the overall verdict.
+- factuality: Float in [0.0, 1.0] for the overall verdict. 0.0 means the text is completely false, 1.0 means the text is completely true.
 - headline_summary_md: A compact markdown string for the main page with a
   fixed, consistent structure so users instantly know where to look.
   Up to three lines (omit any line with nothing notable), each one sentence

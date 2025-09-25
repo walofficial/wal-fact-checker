@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Langfuse initialization and Google ADK OpenTelemetry instrumentation."""
+
+from __future__ import annotations
 
 import logging
 import os
@@ -10,7 +10,6 @@ from langfuse import get_client
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
 
 from wal_fact_checker.core.settings import settings
-
 
 logger: Final = logging.getLogger(__name__)
 
@@ -48,7 +47,5 @@ def initialize_langfuse_tracing() -> None:
 
         # Idempotent; safe to call multiple times
         GoogleADKInstrumentor().instrument()
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.exception("Failed to initialize Langfuse tracing: %s", exc)
-
-

@@ -15,9 +15,24 @@
 import os
 
 os.environ.setdefault("OTEL_PYTHON_CONTEXT_MANAGER", "threadlocal")
+
+from typing import Any
+from uuid import uuid4
+
 import google.auth
-from fastapi import FastAPI
-from google.adk.cli.fast_api import get_fast_api_app
+import httpx
+from a2a.client import A2AClient
+from a2a.client.card_resolver import A2ACardResolver
+from a2a.types import (
+    DataPart,
+    MessageSendConfiguration,
+    MessageSendParams,
+    SendMessageRequest,
+    SendMessageSuccessResponse,
+    Task,
+)
+from fastapi import Body, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import logging as google_cloud_logging
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider, export
@@ -43,19 +58,85 @@ processor = export.BatchSpanProcessor(CloudTraceLoggingSpanExporter())
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 
-AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# In-memory session configuration - no persistent storage
-session_service_uri = None
-
-app: FastAPI = get_fast_api_app(
-    agents_dir=AGENT_DIR,
-    web=True,
-    artifact_service_uri=bucket_name,
-    allow_origins=allow_origins,
-    session_service_uri=session_service_uri,
+app = FastAPI(
+    title="realitycheckagent",
+    description="API for interacting with the Agent realitycheckagent",
 )
-app.title = "realitycheckagent"
-app.description = "API for interacting with the Agent realitycheckagent"
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+BODY_TEST_SEND = Body(
+    default=None,
+    description=(
+        "Optional JSON body: { 'text': 'your message' }. Defaults to a USD→INR query."
+    ),
+)
+
+
+@app.post("/test/send")
+async def test_send_message(
+    request: Request, body: dict[str, Any] | None = BODY_TEST_SEND
+) -> dict[str, Any]:
+    """Send a test message via the A2A API and return the response JSON."""
+
+    user_text: str = (
+        body.get("text")
+        if body and isinstance(body.get("text"), str)
+        else "how much is 10 USD in INR?"
+    )
+
+    async with httpx.AsyncClient(timeout=600.0) as httpx_client:
+        resolver = A2ACardResolver(
+            httpx_client=httpx_client,
+            base_url="http://localhost:8000",
+        )
+        agent_card = await resolver.get_agent_card()
+        client = A2AClient(
+            httpx_client=httpx_client,
+            agent_card=agent_card,
+            url="http://localhost:8000",
+        )
+
+        request = SendMessageRequest(
+            id=str(uuid4()),
+            params=MessageSendParams(
+                **{
+                    "message": {
+                        "role": "user",
+                        "parts": [{"kind": "text", "text": user_text}],
+                        "messageId": uuid4().hex,
+                    },
+                    "configuration": MessageSendConfiguration(
+                        history_length=0, blocking=True
+                    ),
+                }
+            ),
+        )
+
+        response = await client.send_message(request)
+
+        # Extract the last artifact whose last part is a FunctionResponse
+
+        match response.root:
+            case SendMessageSuccessResponse() as success_response:
+                match success_response.result:
+                    case Task() as task:
+                        artifacts = task.artifacts or []
+                        for artifact in reversed(artifacts):
+                            parts = artifact.parts or []
+                            for part in reversed(parts):
+                                match part.root:
+                                    case DataPart() as data_part:
+                                        return data_part.data.get("response")
+
+        return None
 
 
 @app.post("/feedback")

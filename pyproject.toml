@@ -22,7 +22,7 @@ dependencies = [
     "pydantic>=2.9.0",
     "groq>=0.31.1",
     "structlog>=23.0.0",
-    "a2a-sdk[http-server]==0.3.7"
+    "a2a-sdk[http-server]==0.3.7",
 ]
 requires-python = ">=3.10,<3.14"
 

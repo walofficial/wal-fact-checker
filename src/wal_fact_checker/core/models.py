@@ -151,10 +151,10 @@ class EvidenceAdjudicatorOutput(BaseModel):
             "mixed, or unverified)."
         )
     )
-    confidence: float = Field(
+    factuality: float = Field(
         ge=0.0,
         le=1.0,
-        description="Overall confidence score for the verdict (0.0–1.0)",
+        description="Overall factuality score for the verdict (0.0–1.0)",
     )
     headline_summary_md: str = Field(
         description=(
