@@ -24,7 +24,7 @@ public_agent_card = AgentCard(
     description=(
         "Web-scale automated fact checker orchestrating analysis → research → synthesis."
     ),
-    url="http://localhost:8000/",
+    url="http://localhost:8080/",
     version="1.0.0",
     default_input_modes=["text"],
     default_output_modes=["application/json"],
@@ -33,4 +33,4 @@ public_agent_card = AgentCard(
     supports_authenticated_extended_card=True,
 )
 
-a2a_app = to_a2a(root_agent, port=8000, agent_card=public_agent_card)
+a2a_app = to_a2a(root_agent, port=8080, agent_card=public_agent_card)
