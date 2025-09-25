@@ -19,10 +19,6 @@ load_dotenv(".env", override=True)
 class AppSettings(BaseSettings):
     """Application-wide settings and configuration."""
 
-    # Scrape.do API settings
-    scrape_api_url: str = Field(
-        default="https://api.scrape.do", description="Base URL for scrape.do API"
-    )
     scrape_do_token: str = Field(escription="API key for scrape.do service")
 
     # General application settings
@@ -41,7 +37,14 @@ class AppSettings(BaseSettings):
         default=10000, description="Maximum content length for processing"
     )
 
-    groq_api_key: str = Field(default="", description="Groq API key")
+    groq_key: str = Field(default="", description="Groq API key")
+
+    google_api_key: str = Field(alias="gcp_genai_key", default="", description="Google API key")
+
+    langfuse_host: str = Field(default="", description="Langfuse host")
+    langfuse_public_key: str = Field(default="", description="Langfuse public key", alias="factchecker_langfuse_public_key")
+    langfuse_secret_key: str = Field(default="", description="Langfuse secret key", alias="factchecker_langfuse_secret_key")
+    langfuse_tracing_environment: str = Field(default="", description="Langfuse tracing environment")
 
     # Model configuration
     GEMINI_2_5_FLASH_MODEL: str = Field(
@@ -73,3 +76,4 @@ class AppSettings(BaseSettings):
 
 # Create application settings instance
 settings = AppSettings()
+

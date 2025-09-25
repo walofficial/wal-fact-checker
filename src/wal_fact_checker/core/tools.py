@@ -15,8 +15,7 @@ from groq import AsyncGroq
 from .settings import settings
 
 logger = logging.getLogger(__name__)
-
-groq_client = AsyncGroq(api_key=settings.groq_api_key)
+groq_client = AsyncGroq(api_key=settings.groq_key)
 
 
 async def _scrape_single_website(
@@ -42,7 +41,7 @@ async def _scrape_single_website(
             "render": True,
         }
 
-        response = await client.get(settings.scrape_api_url, params=params)
+        response = await client.get("https://api.scrape.do", params=params)
         response.raise_for_status()
 
         # Get the markdown content from scrape.do
@@ -258,13 +257,13 @@ save_to_memory_tool = FunctionTool(save_to_memory)
 groq_search_tool = FunctionTool(search_tool)
 # Export all tools for easy import
 __all__ = [
-    "search_tool",
+    "adk_google_search",  # Use built-in ADK Google search tool
+    "groq_search_tool",
     "load_memory",
+    "load_memory_tool",
     "save_to_memory",
+    "save_to_memory_tool",
     "scrape_website_tool",
     "scrape_websites_tool",
-    "load_memory_tool",
-    "save_to_memory_tool",
-    "groq_search_tool",
-    "adk_google_search",  # Use built-in ADK Google search tool
+    "search_tool",
 ]

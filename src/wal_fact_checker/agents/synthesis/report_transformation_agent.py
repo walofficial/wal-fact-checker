@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
@@ -36,10 +36,10 @@ def transform_adjudicated_report(
 
     # Map easily mappable fields
     return TransformationOutput(
-        factuality=adjudicated_report.confidence,  # Use confidence as factuality score
+        factuality=adjudicated_report.factuality,  # Use confidence as factuality score
         reason=reason_markdown,
         reason_summary=adjudicated_report.headline_summary_md,
-        score_justification=f"Overall verdict: {adjudicated_report.verdict} with confidence {adjudicated_report.confidence:.2f}",
+        score_justification=f"Overall verdict: {adjudicated_report.verdict} with confidence {adjudicated_report.factuality:.2f}",
         references=adjudicated_report.references,
     )
 
@@ -120,7 +120,14 @@ class ReportTransformationAgent(BaseAgent):
 
         # Build final response content as JSON and yield as final event
         content = types.Content(
-            parts=[types.Part(text=transformation_result.model_dump_json())]
+            parts=[
+                types.Part(
+                    # text=transformation_result.model_dump_json(),
+                    function_response=types.FunctionResponse(
+                        response=transformation_result.model_dump()
+                    ),
+                )
+            ]
         )
 
         final_event = Event(
