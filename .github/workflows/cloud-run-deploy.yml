@@ -73,7 +73,7 @@ jobs:
     name: Deploy to Production
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 8
     environment:
       name: production
       url: ${{ steps.deploy_production.outputs.url }}
