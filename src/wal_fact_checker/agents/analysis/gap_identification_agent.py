@@ -9,7 +9,7 @@ from wal_fact_checker.core.models import GapQuestionsOutput
 from wal_fact_checker.core.settings import settings
 
 MODEL = settings.GEMINI_2_5_FLASH_MODEL
-MAX_GAP_QUESTIONS: int = 35
+MAX_GAP_QUESTIONS: int = 25
 
 gap_identification_agent = Agent(
     model=MODEL,
@@ -40,7 +40,9 @@ gap_identification_agent = Agent(
     } questions total)
       whose answers together make every claim decidable (true/false). Deduplicate
       across claims and consolidate overlapping needs.
-    - Coverage: ensure every claim is covered by ≥ 1 question. If more than {MAX_GAP_QUESTIONS}
+    - Coverage: ensure every claim is covered by ≥ 1 question. If more than {
+        MAX_GAP_QUESTIONS
+    }
       would be required, prioritize questions that (a) unlock verification for
       multiple claims, (b) resolve blocking preconditions, or (c) target highest
       uncertainty or time-sensitive assertions.

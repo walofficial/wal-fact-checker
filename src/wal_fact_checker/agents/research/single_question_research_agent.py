@@ -14,8 +14,8 @@ from wal_fact_checker.core.tools import groq_search_tool, scrape_websites_tool
 
 logger = logging.getLogger(__name__)
 
-MAX_NUMBER_OF_SEARCH_TOOL_CALLS = 5
-MAX_NUMBER_OF_SCRAPE_TOOL_CALLS = 3
+MAX_NUMBER_OF_SEARCH_TOOL_CALLS = 4
+MAX_NUMBER_OF_SCRAPE_TOOL_CALLS = 1
 
 tool_max_calls: dict[str, int] = {
     "search_tool": MAX_NUMBER_OF_SEARCH_TOOL_CALLS,
