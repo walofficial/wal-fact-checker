@@ -9,7 +9,7 @@ from wal_fact_checker.core.models import GapQuestionsOutput
 from wal_fact_checker.core.settings import settings
 
 MODEL = settings.GEMINI_2_5_FLASH_MODEL
-MAX_GAP_QUESTIONS: int = 25
+MAX_GAP_QUESTIONS: int = 15
 
 gap_identification_agent = Agent(
     model=MODEL,
