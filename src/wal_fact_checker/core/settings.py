@@ -65,7 +65,7 @@ class AppSettings(BaseSettings):
 
     port: int = Field(description="Port number")
 
-    host: str = Field(description="Host name")
+    host: str = Field(default="localhost", description="Host name")
 
     @classmethod
     def settings_customise_sources(
