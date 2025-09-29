@@ -211,6 +211,18 @@ class ScrapeOutput(BaseModel):
     status: str = Field(description="Status of the scrape operation")
 
 
+class TransformationReferenceOutput(BaseModel):
+    """Pydantic schema for evidence reference."""
+
+    is_supportive: bool = Field(
+        description="Whether this reference supports or refutes the claim"
+    )
+    key_quote: str = Field(
+        description="Specific quote or key information from the source"
+    )
+    url: str = Field(description="URL of the source")
+
+
 class TransformationOutput(BaseModel):
     """Output schema for report transformation agent."""
 
@@ -220,6 +232,6 @@ class TransformationOutput(BaseModel):
     score_justification: str = Field(
         description="Justification of the fact checking score"
     )
-    references: list[ReferenceOutput] = Field(
+    references: list[TransformationReferenceOutput] = Field(
         description="List of references used in the fact checking"
     )

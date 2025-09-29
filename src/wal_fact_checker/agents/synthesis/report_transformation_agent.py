@@ -11,7 +11,11 @@ from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
 from google.genai import types
 
-from ...core.models import EvidenceAdjudicatorOutput, TransformationOutput
+from ...core.models import (
+    EvidenceAdjudicatorOutput,
+    TransformationOutput,
+    TransformationReferenceOutput,
+)
 
 # Configure logging for this module
 logger = logging.getLogger(__name__)
@@ -40,7 +44,14 @@ def transform_adjudicated_report(
         reason=reason_markdown,
         reason_summary=adjudicated_report.headline_summary_md,
         score_justification=f"Overall verdict: {adjudicated_report.verdict} with confidence {adjudicated_report.factuality:.2f}",
-        references=adjudicated_report.references,
+        references=[
+            TransformationReferenceOutput(
+                is_supportive=reference.is_supportive,
+                key_quote=reference.citation,
+                url=reference.url,
+            )
+            for reference in adjudicated_report.references
+        ],
     )
 
 
