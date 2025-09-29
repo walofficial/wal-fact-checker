@@ -25,7 +25,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
 ENTRYPOINT []
 
 
-CMD uvicorn wal_fact_checker.a2a:a2a_app \
+CMD uvicorn wal_fact_checker.app:app \
     --host 0.0.0.0 \
     --port $PORT \
     --reload; \

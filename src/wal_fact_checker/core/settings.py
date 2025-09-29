@@ -39,17 +39,33 @@ class AppSettings(BaseSettings):
 
     groq_key: str = Field(default="", description="Groq API key")
 
-    google_api_key: str = Field(alias="gcp_genai_key", default="", description="Google API key")
+    google_api_key: str = Field(
+        alias="gcp_genai_key", default="", description="Google API key"
+    )
 
     langfuse_host: str = Field(default="", description="Langfuse host")
-    langfuse_public_key: str = Field(default="", description="Langfuse public key", alias="factchecker_langfuse_public_key")
-    langfuse_secret_key: str = Field(default="", description="Langfuse secret key", alias="factchecker_langfuse_secret_key")
-    langfuse_tracing_environment: str = Field(default="", description="Langfuse tracing environment")
+    langfuse_public_key: str = Field(
+        default="",
+        description="Langfuse public key",
+        alias="factchecker_langfuse_public_key",
+    )
+    langfuse_secret_key: str = Field(
+        default="",
+        description="Langfuse secret key",
+        alias="factchecker_langfuse_secret_key",
+    )
+    langfuse_tracing_environment: str = Field(
+        default="", description="Langfuse tracing environment"
+    )
 
     # Model configuration
     GEMINI_2_5_FLASH_MODEL: str = Field(
         default="gemini-2.5-flash", description="Gemini 2.5 Flash model name"
     )
+
+    port: int = Field(description="Port number")
+
+    host: str = Field(description="Host name")
 
     @classmethod
     def settings_customise_sources(
@@ -76,4 +92,3 @@ class AppSettings(BaseSettings):
 
 # Create application settings instance
 settings = AppSettings()
-

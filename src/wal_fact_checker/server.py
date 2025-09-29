@@ -12,14 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-os.environ.setdefault("OTEL_PYTHON_CONTEXT_MANAGER", "threadlocal")
-
 from typing import Any
 from uuid import uuid4
 
-import google.auth
 import httpx
 from a2a.client import A2AClient
 from a2a.client.card_resolver import A2ACardResolver
@@ -33,30 +28,6 @@ from a2a.types import (
 )
 from fastapi import Body, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from google.cloud import logging as google_cloud_logging
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider, export
-
-from wal_fact_checker.utils.gcs import create_bucket_if_not_exists
-from wal_fact_checker.utils.tracing import CloudTraceLoggingSpanExporter
-from wal_fact_checker.utils.typing import Feedback
-
-_, project_id = google.auth.default()
-logging_client = google_cloud_logging.Client()
-logger = logging_client.logger(__name__)
-allow_origins = (
-    os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
-)
-
-bucket_name = f"gs://{project_id}-realitycheckagent-logs-data"
-create_bucket_if_not_exists(
-    bucket_name=bucket_name, project=project_id, location="us-central1"
-)
-
-provider = TracerProvider()
-processor = export.BatchSpanProcessor(CloudTraceLoggingSpanExporter())
-provider.add_span_processor(processor)
-trace.set_tracer_provider(provider)
 
 app = FastAPI(
     title="realitycheckagent",
@@ -95,13 +66,13 @@ async def test_send_message(
     async with httpx.AsyncClient(timeout=600.0) as httpx_client:
         resolver = A2ACardResolver(
             httpx_client=httpx_client,
-            base_url="http://localhost:8000",
+            base_url="http://localhost:8003",
         )
         agent_card = await resolver.get_agent_card()
         client = A2AClient(
             httpx_client=httpx_client,
             agent_card=agent_card,
-            url="http://localhost:8000",
+            url="http://localhost:8003",
         )
 
         request = SendMessageRequest(
@@ -136,25 +107,4 @@ async def test_send_message(
                                     case DataPart() as data_part:
                                         return data_part.data.get("response")
 
-        return None
-
-
-@app.post("/feedback")
-def collect_feedback(feedback: Feedback) -> dict[str, str]:
-    """Collect and log feedback.
-
-    Args:
-        feedback: The feedback data to log
-
-    Returns:
-        Success message
-    """
-    logger.log_struct(feedback.model_dump(), severity="INFO")
-    return {"status": "success"}
-
-
-# Main execution
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+        return response.root.model_dump()

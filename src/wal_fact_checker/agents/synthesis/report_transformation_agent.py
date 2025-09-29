@@ -114,18 +114,27 @@ class ReportTransformationAgent(BaseAgent):
 
         # Apply transformation logic
         transformation_result = transform_adjudicated_report(adjudicated_report)
+        transformation_result_dict = transformation_result.model_dump()
 
         # Store result in session state
-        ctx.session.state["transformation_result"] = transformation_result
+        ctx.session.state["transformation_result"] = transformation_result_dict
+
+        yield Event(
+            invocation_id=ctx.invocation_id,
+            author=self.name,
+            actions=EventActions(
+                state_delta={"transformation_result": transformation_result_dict},
+            ),
+        )
 
         # Build final response content as JSON and yield as final event
         content = types.Content(
             parts=[
                 types.Part(
-                    # text=transformation_result.model_dump_json(),
-                    function_response=types.FunctionResponse(
-                        response=transformation_result.model_dump()
-                    ),
+                    text=transformation_result.model_dump_json(),
+                    # function_response=types.FunctionResponse(
+                    #     response=transformation_result.model_dump()
+                    # ),
                 )
             ]
         )
@@ -134,11 +143,7 @@ class ReportTransformationAgent(BaseAgent):
             invocation_id=ctx.invocation_id,
             author=self.name,
             content=content,
-            actions=EventActions(
-                state_delta={
-                    "transformation_result": transformation_result.model_dump()
-                },
-            ),
+            actions=EventActions(escalate=True),
         )
 
         yield final_event
