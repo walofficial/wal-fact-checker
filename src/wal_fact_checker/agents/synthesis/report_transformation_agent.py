@@ -70,23 +70,23 @@ def _generate_reason_markdown(adjudicated_report: EvidenceAdjudicatorOutput) -> 
     if adjudicated_report.what_was_true:
         markdown_sections.append("## True")
         for item in adjudicated_report.what_was_true:
-            markdown_sections.append(f"- {item.claim_text}")
-            markdown_sections.append(f"  {item.argumentative_explanation}")
-        markdown_sections.append("")
+            markdown_sections.append(f"- {item.argumentative_explanation}")
+            # markdown_sections.append(f"  {item.argumentative_explanation}")
+        markdown_sections.append("\n")
 
     if adjudicated_report.what_was_false:
         markdown_sections.append("## False")
         for item in adjudicated_report.what_was_false:
-            markdown_sections.append(f"- {item.claim_text}")
-            markdown_sections.append(f"  {item.argumentative_explanation}")
-        markdown_sections.append("")
+            markdown_sections.append(f"- {item.argumentative_explanation}")
+            # markdown_sections.append(f"  {item.argumentative_explanation}")
+        markdown_sections.append("\n")
 
     if adjudicated_report.what_could_not_be_verified:
         markdown_sections.append("## Unverified")
         for item in adjudicated_report.what_could_not_be_verified:
-            markdown_sections.append(f"- {item.claim_text}")
-            markdown_sections.append(f"  {item.argumentative_explanation}")
-        markdown_sections.append("")
+            markdown_sections.append(f"- {item.argumentative_explanation}")
+            # markdown_sections.append(f"  {item.argumentative_explanation}")
+        markdown_sections.append("\n")
 
     return "\n".join(markdown_sections).strip()
 

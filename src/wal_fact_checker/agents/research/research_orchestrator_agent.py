@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import AsyncGenerator, Final
+from collections.abc import AsyncGenerator
+from typing import Final
 
 from google.adk.agents import BaseAgent, ParallelAgent, SequentialAgent
 from google.adk.agents.invocation_context import InvocationContext
