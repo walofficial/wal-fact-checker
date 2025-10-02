@@ -9,14 +9,17 @@ from google.genai import types
 
 from wal_fact_checker.core.models import GapQuestionsOutput
 from wal_fact_checker.core.settings import settings
+from wal_fact_checker.utils.callbacks import inject_current_date_before_model
 
 MODEL = settings.GEMINI_2_5_FLASH_MODEL
 MAX_GAP_QUESTIONS: int = 15
+
 
 gap_identification_agent = LlmAgent(
     model=MODEL,
     name="GapIdentificationAgent",
     generate_content_config=types.GenerateContentConfig(temperature=0.0, top_k=1),
+    before_model_callback=inject_current_date_before_model,
     instruction=f"""
     You are given structured claims extracted from source text. Generate critical
     research questions that, when answered, will provide sufficient evidence to

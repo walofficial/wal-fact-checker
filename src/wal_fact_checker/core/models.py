@@ -119,8 +119,10 @@ class SectionItemOutput(BaseModel):
     claim_text: str = Field(description="Text of the referenced claim")
     argumentative_explanation: str = Field(
         description=(
-            "Concise argument explaining why the claim fits this section, "
-            "grounded in the provided evidence."
+            "Short, high-impact explanation (1-2 sentences, 18-40 words) that "
+            "states the finding first, then cites the strongest evidence type "
+            "and recency. No hedging, no URLs, no quotes; use concrete specifics "
+            "(numbers/dates/entities) and simple syntax."
         )
     )
 
@@ -147,14 +149,18 @@ class EvidenceAdjudicatorOutput(BaseModel):
 
     verdict: str = Field(
         description=(
-            "Overall verdict over the text (e.g., mostly_true, mostly_false, "
-            "mixed, or unverified)."
+            "Overall verdict used for UI gating (show/hide). Choose one: mostly_true, "
+            "mostly_false, mixed, unverified. 'Unverified' means no material confirmations "
+            "or refutations. 'Material' = important to the core thesis (affects outcomes, "
+            "timelines, quantities, official roles/status, key identities, money, safety, "
+            "legality). Trivial details (e.g., color, incidental attributes) are non-material. "
+            "If any material true/false finding exists, do not use 'unverified'."
         )
     )
     factuality: float = Field(
         ge=0.0,
         le=1.0,
-        description="Overall factuality score for the verdict (0.0–1.0)",
+        description="Overall factuality score for the verdict (0.0-1.0)",
     )
     headline_summary_md: str = Field(
         description=(
@@ -226,6 +232,11 @@ class TransformationReferenceOutput(BaseModel):
 class TransformationOutput(BaseModel):
     """Output schema for report transformation agent."""
 
+    verdict: str = Field(
+        description=(
+            "Overall verdict for UI gating (mostly_true, mostly_false, mixed, unverified)"
+        )
+    )
     factuality: float = Field(description="Factuality score of the transformed report")
     reason: str = Field(description="Detailed explanation of the fact checking")
     reason_summary: str = Field(description="Summary explanation of the fact checking")

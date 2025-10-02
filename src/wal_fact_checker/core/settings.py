@@ -67,6 +67,8 @@ class AppSettings(BaseSettings):
 
     host: str = Field(default="localhost", description="Host name")
 
+    gcp_genai_key: str = Field(description="GCP GenAI key")
+
     @classmethod
     def settings_customise_sources(
         cls,

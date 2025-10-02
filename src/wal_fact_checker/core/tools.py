@@ -9,7 +9,6 @@ from typing import Any
 
 import httpx
 from google.adk.tools import FunctionTool
-from google.adk.tools import google_search as adk_google_search
 from groq import AsyncGroq
 
 from .settings import settings
@@ -106,57 +105,20 @@ async def scrape_tool(urls: list[str]) -> dict[str, Any]:
             else:
                 failed_scrapes += 1
 
-    # Combine all successful content and omit failed results
-    combined_content = ""
+    # Combine all successful content as dict with URLs as keys
+    combined_content: dict[str, str] = {}
     successful_results = [r for r in results if r.get("status") == "success"]
 
     if successful_results:
-        content_parts = []
         for result in successful_results:
             url = result["url"]
             content = result["content"]
             if content.strip():  # Only include if content is not empty
-                content_parts.append(f"# Content from {url}\n\n{content}\n\n---\n")
-        combined_content = "\n".join(content_parts)
+                combined_content[url] = content
 
     return {
         "status": "success" if successful_scrapes > 0 else "error",
         "combined_content": combined_content,
-    }
-
-
-async def load_memory(query: str, limit: int = 10) -> dict[str, Any]:
-    """Load relevant information from memory/RAG store.
-
-    Args:
-        query: Query to search memory for
-        limit: Maximum number of results to return
-
-    Returns:
-        Dictionary containing relevant memories and their sources
-    """
-    # Placeholder - would integrate with actual memory service
-    return {"query": query, "results": [], "total_found": 0}
-
-
-async def save_to_memory(
-    content: str, source: str, metadata: dict[str, Any] | None = None
-) -> dict[str, Any]:
-    """Save information to memory/RAG store.
-
-    Args:
-        content: Content to save
-        source: Source URL or identifier
-        metadata: Additional metadata about the content
-
-    Returns:
-        Dictionary confirming the save operation
-    """
-    return {
-        "saved": True,
-        "content_length": len(content),
-        "source": source,
-        "metadata": metadata or {},
     }
 
 
@@ -245,25 +207,16 @@ async def search_tool(query: str, country: str) -> dict[str, Any]:
                             )
 
         return {"status": "success", "results": results}
-    except Exception:  # noqa: BLE001 - surface clean error string
+    except Exception:
         logger.exception("Error in groq_search")
         return {"status": "error"}
 
 
 # Create ADK-compatible tool instances
 scrape_websites_tool = FunctionTool(scrape_tool)
-load_memory_tool = FunctionTool(load_memory)
-save_to_memory_tool = FunctionTool(save_to_memory)
 groq_search_tool = FunctionTool(search_tool)
 # Export all tools for easy import
 __all__ = [
-    "adk_google_search",  # Use built-in ADK Google search tool
     "groq_search_tool",
-    "load_memory",
-    "load_memory_tool",
-    "save_to_memory",
-    "save_to_memory_tool",
-    "scrape_website_tool",
     "scrape_websites_tool",
-    "search_tool",
 ]

@@ -9,13 +9,16 @@ from google.genai import types
 
 from wal_fact_checker.core.models import StructuredClaimsOutput
 from wal_fact_checker.core.settings import settings
+from wal_fact_checker.utils.callbacks import inject_current_date_before_model
 
 MODEL = settings.GEMINI_2_5_FLASH_MODEL
+
 
 claim_structuring_agent = LlmAgent(
     model=MODEL,
     name="ClaimStructuringAgent",
     generate_content_config=types.GenerateContentConfig(temperature=0.0, top_k=1),
+    before_model_callback=inject_current_date_before_model,
     instruction="""
     You are given free-form text (articles, image descriptions, video summaries,
     etc.). Extract ONLY discrete, atomic, and externally verifiable claims. Each
@@ -69,6 +72,17 @@ claim_structuring_agent = LlmAgent(
       ✓ "The image shows a red Tesla Model 3 at a charging station"
       ✗ "A car is charging" (loses critical details)
 
+    KEEP UNDER-SPECIFIED CLAIMS (RELAXED MODE):
+    - If a statement is a clear factual proposition but lacks subject, scope, or
+      time, still EXTRACT it for downstream clarification.
+    - Explicitly indicate missing context with neutral qualifiers in the claim
+      text (do NOT invent details):
+      ✓ "The tallest building (unspecified which/where) is 500 meters long."
+    - Prefer concise, neutral markers: "unspecified which/where", "unspecified
+      subject", "unspecified date/location".
+    - This relaxation increases recall; later agents will add clarifying
+      questions.
+
     DEDUPLICATION:
     - Remove semantically identical claims (keep first occurrence)
     - Keep claims that differ in time, quantity, or scope even if similar
@@ -79,7 +93,10 @@ claim_structuring_agent = LlmAgent(
     - Value judgments ("X is the best", "Y is revolutionary")
     - Future predictions without attributed source
     - Rhetorical questions or instructions
-    - Statements lacking specificity: "many people", "often", "very high" without numbers or measurable criteria
+    - Grossly vague statements with no measurable element and no recoverable
+      subject (e.g., "many people", "often") unless a concrete number/unit is
+      present. If a number/unit is present but subject/scope is missing, KEEP it
+      and mark missing context as "unspecified" per relaxed mode above.
 
     LENGTH GUIDANCE:
     - Target: 100-240 characters per claim
@@ -197,6 +214,23 @@ claim_structuring_agent = LlmAgent(
     - "YoY" → "year-over-year" (expanded abbreviation)
     - Split compound statement into two claims
     - "fastest-growing in sector" → excluded (superlative without clear measurement criteria)
+
+    ### Example 6: Under-specified + typo-prone input (RELAXED MODE)
+    Input:
+    "tallest building 500 meters long. and president ofgerogia is kavela"
+
+    Output:
+    {
+      "claims": [
+        {"id": "C1", "text": "The tallest building (unspecified which/where) is 500 meters long."},
+        {"id": "C2", "text": "The president of Georgia is Kavela."}
+      ]
+    }
+
+    Rationale:
+    - C1: Kept despite missing subject/scope; marked as "unspecified" for later
+      clarification
+    - C2: Self-contained proposition; typos normalized minimally without inventing details
     """,
     description="Transforms input text into structured, verifiable claims",
     planner=BuiltInPlanner(

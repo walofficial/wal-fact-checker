@@ -40,6 +40,7 @@ def transform_adjudicated_report(
 
     # Map easily mappable fields
     return TransformationOutput(
+        verdict=adjudicated_report.verdict,
         factuality=adjudicated_report.factuality,  # Use confidence as factuality score
         reason=reason_markdown,
         reason_summary=adjudicated_report.headline_summary_md,
