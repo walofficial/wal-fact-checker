@@ -182,50 +182,39 @@ Quantitative score where:
 Calculate as: (true_count + 0.5 * unverified_count) / total_claims
 
 ### headline_summary_md (string)
-User-facing plain-text summary with up to 3 lines in this exact order:
+User-facing plain-text summary with up to 3 short lines. No labels. Each line should be a clear takeaway in everyday language (not childish):
 
-Line 1 (if any true claims): "True — <one short sentence of the most important verified point>"
-Line 2 (if any false claims): "False — <one short sentence of the most important incorrect point>"
-Line 3 (if any unverified): "Unverified — <one short sentence of the most important unknown>"
+Ordering:
+- Lead with the single most useful takeaway (usually the strongest verified fact or correction).
+- Follow with the next most impactful correction or confirmation.
+- Optionally include a third line for the most important unresolved unknown.
 
 Inclusion:
 - Include a line only if it is notable.
-- Prefer 1-2 lines; include the 3rd only if it adds clear value.
-- CRITICAL: Never output a category label without content. If a category has no notable content, omit the entire line.
-- If you include any item in a category (i.e., add anything to what_was_true/what_was_false/what_could_not_be_verified), you MUST write a contentful line for that category (no empty label).
-- If genuinely none of the categories yield a concise takeaway, output exactly one line:
-  "Unverified — No single claim stands out; evidence is limited or conflicting."
+- Prefer 1-2 lines; add a 3rd only if it adds clear value.
+- If genuinely nothing concise can be confirmed or refuted, output exactly one line:
+  "No concise takeaway can be confirmed or refuted; evidence is limited or conflicting."
 
-Selection (pick ONE per category):
+Selection (each line summarizes ONE item):
 - Prioritize: source authority, recency, specificity (numbers/dates), audience impact.
 - Prefer concrete, broadly relevant findings over niche details.
 
 Style:
 - 8-16 words per line (NEVER exceed 30).
+- Use clear, everyday language (adult audience). Avoid jargon; if necessary, keep it minimal.
 - One clean clause; avoid commas.
-- Use present/simple past; no hedging (no "might", "appears", "suggests").
-- No citations, no URLs, no quotes, no brackets, no emojis.
+- Present/simple past; no hedging (no "might", "appears", "suggests").
+- No citations, URLs, quotes, brackets, or emojis.
 - Do not restate overall verdict or percentage.
-- Use the em dash (—) after the label.
-- Each line MUST contain: the label, a space, an em dash (—), a space, then content with at least 8 words.
-- Trim trailing spaces. Do not output empty lines or extra newlines at the end.
+- Trim trailing spaces; no extra blank lines.
 
 Time sensitivity:
 - If timeliness matters, append "as of <Mon YYYY>".
 
-Formatting:
-- Exact labels: "True —", "False —", "Unverified —" (capitalized, em dash).
-- Plain lines only (no bullets or extra whitespace).
-
-Validation (do NOT output these checks):
-- Do not output empty labels (e.g., "True" or "False" or "Unverified" alone).
-- Ensure each line has 8-16 words after the em dash.
-- If all categories are empty, use the single-line fallback.
-
-Examples:
-True — GPT-4 launched in March 2023 with image input confirmed.
-False — No evidence supports a November 2023 Cybertruck retail launch.
-Unverified — Current role of Alice Kim cannot be confirmed as of Sep 2025.
+Examples (no labels):
+"GPT-4 launched in March 2023 with image input confirmed."
+"No evidence supports a November 2023 retail launch for Cybertruck."
+"Alice Kim's current role cannot be confirmed as of September 2025."
 
 ### what_was_true (list of SectionItemOutput)
 Claims verified as TRUE. Return at most 4 items. Select the most material items first using importance rules; prefer authoritative and recent evidence; break ties with specificity and audience impact. Each item:
