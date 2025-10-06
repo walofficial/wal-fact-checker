@@ -11,7 +11,7 @@ from google.adk.agents import BaseAgent, ParallelAgent, SequentialAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
 
-from wal_fact_checker.core.models import GapQuestionsOutput
+from wal_fact_checker.core.models import GapQuestionOutput, GapQuestionsOutput
 from wal_fact_checker.core.settings import settings
 
 from .single_question_research_agent import (
@@ -32,7 +32,7 @@ class ResearchOrchestratorAgent(BaseAgent):
         logger.debug(f"Initialized {self.name}")
 
     def _create_batch_parallel_agents(
-        self, questions: list[str], batch_size: int
+        self, questions: list[GapQuestionOutput], batch_size: int
     ) -> list[ParallelAgent]:
         """Create ParallelAgent instances for batched question processing."""
         question_batches = [
@@ -44,8 +44,9 @@ class ResearchOrchestratorAgent(BaseAgent):
         for batch_idx, batch_questions in enumerate(question_batches):
             batch_worker_agents = [
                 create_single_question_research_agent(
-                    question=question,
+                    question=question.question,
                     output_key=f"research_answer_{batch_idx * batch_size + q_idx}",
+                    priority=question.priority,
                 )
                 for q_idx, question in enumerate(batch_questions)
             ]
@@ -62,15 +63,14 @@ class ResearchOrchestratorAgent(BaseAgent):
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         gap_questions_output_dict = ctx.session.state.get("gap_questions") or None
-        questions = []
+        if not gap_questions_output_dict:
+            logger.error(
+                f"[{ctx.invocation_id}] {self.name}: No gap questions found in session state"
+            )
+            return
 
-        logger.debug(
-            f"[{ctx.invocation_id}] {self.name}: Raw gap_questions output: {gap_questions_output_dict}"
-        )
-
-        if gap_questions_output_dict is not None:
-            gap_questions_output = GapQuestionsOutput(**gap_questions_output_dict)
-            questions = [item.question for item in gap_questions_output.gap_questions]
+        gap_questions_output = GapQuestionsOutput(**gap_questions_output_dict)
+        questions = gap_questions_output.gap_questions
 
         if not questions:
             logger.error(
@@ -78,32 +78,58 @@ class ResearchOrchestratorAgent(BaseAgent):
             )
             return
 
-        # Step 2: Create batched parallel workflow
-        batch_size = 5
-        batch_parallel_agents = self._create_batch_parallel_agents(
-            questions, batch_size
-        )
+        # Group questions by priority
+        priority_groups: dict[str, list[GapQuestionOutput]] = {
+            "high": [],
+            "medium": [],
+            "low": [],
+        }
+        for question in questions:
+            priority_groups[question.priority].append(question)
 
-        if not batch_parallel_agents:
+        # Create a sequential workflow to execute priority groups in order
+        priority_workflow_agents = []
+        for priority in ["high", "medium", "low"]:
+            priority_questions = priority_groups[priority]
+            if not priority_questions:
+                continue
+
+            batch_size = 5
+            batch_parallel_agents = self._create_batch_parallel_agents(
+                priority_questions, batch_size
+            )
+
+            if not batch_parallel_agents:
+                continue
+
+            priority_agent = SequentialAgent(
+                name=f"{priority.capitalize()}PriorityResearchAgent",
+                sub_agents=batch_parallel_agents,
+            )
+            priority_workflow_agents.append(priority_agent)
+
+        if not priority_workflow_agents:
             logger.warning(
-                f"[{ctx.invocation_id}] {self.name}: No batch agents created"
+                f"[{ctx.invocation_id}] {self.name}: No priority agents created"
             )
             return
 
-        # Step 3: Create sequential workflow to orchestrate batches
         sequential_workflow = SequentialAgent(
-            name="BatchSequentialResearchAgent",
-            sub_agents=batch_parallel_agents,
+            name="PrioritySequentialResearchAgent",
+            sub_agents=priority_workflow_agents,
         )
 
         self.sub_agents.append(sequential_workflow)
 
-        # Step 4: Execute the sequential workflow and yield its events
+        # Execute the sequential workflow and yield its events
         async for event in sequential_workflow.run_async(ctx):
             yield event
 
         research_answers: list[dict] = []
-        for i, question in enumerate(questions):
+        all_questions = (
+            priority_groups["high"] + priority_groups["medium"] + priority_groups["low"]
+        )
+        for i, _question in enumerate(all_questions):
             output_key = f"research_answer_{i}"
             research_answer = ctx.session.state.get(output_key)
             if research_answer is None:

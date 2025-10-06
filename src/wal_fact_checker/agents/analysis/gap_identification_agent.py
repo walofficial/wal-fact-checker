@@ -129,8 +129,8 @@ gap_identification_agent = LlmAgent(
 
     Strict JSON (no commentary, no extra fields):
     {{"gap_questions": [
-        {{"id": "Q1", "question": "<question?>", "claim_id": "C1", "question_type": "temporal"}},
-        {{"id": "Q2", "question": "<question?>", "claim_id": "C2", "question_type": "quantifiable"}}
+        {{"id": "Q1", "question": "<question?>", "claim_id": "C1", "question_type": "temporal", "priority": "high"}},
+        {{"id": "Q2", "question": "<question?>", "claim_id": "C2", "question_type": "quantifiable", "priority": "medium"}}
       ]
     }}
 
@@ -138,6 +138,7 @@ gap_identification_agent = LlmAgent(
     - IDs: "Q1", "Q2", "Q3"... sequential across all claims
     - question_type must be one of: temporal, quantifiable, ambiguous, implicit
     - claim_id must match exactly the ID from the input claims
+    - priority must be one of: high, medium, low
     - Maximum {MAX_GAP_QUESTIONS} questions in the gap_questions array
     - Maintain claim order; within a claim, order by priority (high-impact first)
 
@@ -147,8 +148,8 @@ gap_identification_agent = LlmAgent(
     Claim C1: "Since 2021, Alice Kim has served as CTO of Acme Corp."
 
     Questions:
-    {{"id": "Q1", "question": "Is Alice Kim currently serving as CTO of Acme Corp as of September 30, 2025?", "claim_id": "C1", "question_type": "temporal"}}
-    {{"id": "Q2", "question": "When did Alice Kim become CTO of Acme Corp according to official company announcements?", "claim_id": "C1", "question_type": "implicit"}}
+    {{"id": "Q1", "question": "Is Alice Kim currently serving as CTO of Acme Corp as of September 30, 2025?", "claim_id": "C1", "question_type": "temporal", "priority": "high"}}
+    {{"id": "Q2", "question": "When did Alice Kim become CTO of Acme Corp according to official company announcements?", "claim_id": "C1", "question_type": "implicit", "priority": "medium"}}
 
     Rationale:
     - Q1 validates current status (temporal)
@@ -159,8 +160,8 @@ gap_identification_agent = LlmAgent(
     Claim C2: "GPT-4 supports image inputs."
 
     Questions:
-    {{"id": "Q3", "question": "What types of image inputs and formats does GPT-4 support according to OpenAI's official documentation?", "claim_id": "C2", "question_type": "ambiguous"}}
-    {{"id": "Q4", "question": "What official OpenAI announcement or documentation confirms GPT-4's image input capability?", "claim_id": "C2", "question_type": "implicit"}}
+    {{"id": "Q3", "question": "What types of image inputs and formats does GPT-4 support according to OpenAI's official documentation?", "claim_id": "C2", "question_type": "ambiguous", "priority": "high"}}
+    {{"id": "Q4", "question": "What official OpenAI announcement or documentation confirms GPT-4's image input capability?", "claim_id": "C2", "question_type": "implicit", "priority": "medium"}}
 
     Rationale:
     - Q3 clarifies what "supports" means (ambiguous)
@@ -171,8 +172,8 @@ gap_identification_agent = LlmAgent(
     Claim C3: "Acme Corp's engineering team grew from 50 to 200 people since Alice Kim became CTO in 2021."
 
     Questions:
-    {{"id": "Q5", "question": "What was the exact size of Acme Corp's engineering team when Alice Kim became CTO in 2021?", "claim_id": "C3", "question_type": "quantifiable"}}
-    {{"id": "Q6", "question": "What is the current size of Acme Corp's engineering team as of September 30, 2025?", "claim_id": "C3", "question_type": "quantifiable"}}
+    {{"id": "Q5", "question": "What was the exact size of Acme Corp's engineering team when Alice Kim became CTO in 2021?", "claim_id": "C3", "question_type": "quantifiable", "priority": "high"}}
+    {{"id": "Q6", "question": "What is the current size of Acme Corp's engineering team as of September 30, 2025?", "claim_id": "C3", "question_type": "quantifiable", "priority": "high"}}
 
     Rationale:
     - Q5 verifies the starting number (quantifiable)
@@ -183,7 +184,7 @@ gap_identification_agent = LlmAgent(
     Claim C4: "OpenAI released GPT-4 in March 2023."
 
     Questions:
-    {{"id": "Q7", "question": "When did OpenAI officially release GPT-4 according to OpenAI's announcements?", "claim_id": "C4", "question_type": "implicit"}}
+    {{"id": "Q7", "question": "When did OpenAI officially release GPT-4 according to OpenAI's announcements?", "claim_id": "C4", "question_type": "implicit", "priority": "high"}}
 
     Rationale:
     - Single question sufficient - verifies date and event
@@ -194,7 +195,7 @@ gap_identification_agent = LlmAgent(
     Claim C5: "According to the video speaker, Tesla Cybertruck production started in November 2023."
 
     Questions:
-    {{"id": "Q8", "question": "When did Tesla officially begin Cybertruck production according to Tesla's official announcements or SEC filings?", "claim_id": "C5", "question_type": "implicit"}}
+    {{"id": "Q8", "question": "When did Tesla officially begin Cybertruck production according to Tesla's official announcements or SEC filings?", "claim_id": "C5", "question_type": "implicit", "priority": "high"}}
 
     Rationale:
     - Claim is attributed to speaker, so verify against official sources
@@ -206,8 +207,8 @@ gap_identification_agent = LlmAgent(
     Claim C7: "Tesla Cybertruck deliveries began in November 2023 and were limited to employees."
 
     Questions:
-    {{"id": "Q9", "question": "When did Tesla officially begin Cybertruck production according to company announcements?", "claim_id": "C6", "question_type": "implicit"}}
-    {{"id": "Q10", "question": "When did Tesla begin Cybertruck deliveries and who were the initial recipients according to official sources?", "claim_id": "C7", "question_type": "implicit"}}
+    {{"id": "Q9", "question": "When did Tesla officially begin Cybertruck production according to company announcements?", "claim_id": "C6", "question_type": "implicit", "priority": "high"}}
+    {{"id": "Q10", "question": "When did Tesla begin Cybertruck deliveries and who were the initial recipients according to official sources?", "claim_id": "C7", "question_type": "implicit", "priority": "high"}}
 
     Rationale:
     - Q9 verifies C6 (production start)

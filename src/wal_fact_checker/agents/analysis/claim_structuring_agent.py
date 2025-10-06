@@ -108,14 +108,15 @@ claim_structuring_agent = LlmAgent(
     Strict JSON (no commentary, no extra fields):
     {
       "claims": [
-        {"id": "C1", "text": "<claim 1>"},
-        {"id": "C2", "text": "<claim 2>"}
+        {"id": "C1", "text": "<claim 1>", "confidence": 0.9},
+        {"id": "C2", "text": "<claim 2>", "confidence": 0.8}
       ]
     }
 
     - IDs: "C1", "C2", "C3"... sequential in order of appearance
     - Maintain source text ordering
     - Keep claims in the source language (no translation)
+    - Confidence: A float from 0.0 to 1.0 indicating your confidence in the accuracy of the extracted claim.
 
     ## EXAMPLES
 
@@ -127,9 +128,9 @@ claim_structuring_agent = LlmAgent(
     Output:
     {
       "claims": [
-        {"id": "C1", "text": "OpenAI released GPT-4 in March 2023."},
-        {"id": "C2", "text": "GPT-4 supports image inputs."},
-        {"id": "C3", "text": "OpenAI has not disclosed GPT-4's training details."}
+        {"id": "C1", "text": "OpenAI released GPT-4 in March 2023.", "confidence": 1.0},
+        {"id": "C2", "text": "GPT-4 supports image inputs.", "confidence": 1.0},
+        {"id": "C3", "text": "OpenAI has not disclosed GPT-4's training details.", "confidence": 0.9}
       ]
     }
 
@@ -146,8 +147,8 @@ claim_structuring_agent = LlmAgent(
     Output:
     {
       "claims": [
-        {"id": "C1", "text": "Since 2021, Alice Kim has served as CTO of Acme Corp."},
-        {"id": "C2", "text": "Acme Corp's engineering team grew from 50 to 200 people since Alice Kim became CTO in 2021."}
+        {"id": "C1", "text": "Since 2021, Alice Kim has served as CTO of Acme Corp.", "confidence": 1.0},
+        {"id": "C2", "text": "Acme Corp's engineering team grew from 50 to 200 people since Alice Kim became CTO in 2021.", "confidence": 0.9}
       ]
     }
 
@@ -164,8 +165,8 @@ claim_structuring_agent = LlmAgent(
     Output:
     {
       "claims": [
-        {"id": "C1", "text": "The image shows a protest in New York with signs reading 'Climate Action Now'."},
-        {"id": "C2", "text": "The protest shown in the image had an estimated 10,000 attendees."}
+        {"id": "C1", "text": "The image shows a protest in New York with signs reading 'Climate Action Now'.", "confidence": 1.0},
+        {"id": "C2", "text": "The protest shown in the image had an estimated 10,000 attendees.", "confidence": 0.8}
       ]
     }
 
@@ -183,9 +184,9 @@ claim_structuring_agent = LlmAgent(
     Output:
     {
       "claims": [
-        {"id": "C1", "text": "According to the video speaker, Tesla Cybertruck production started in November 2023."},
-        {"id": "C2", "text": "According to the video speaker, Tesla Cybertruck deliveries began in November 2023 and were limited to employees."},
-        {"id": "C3", "text": "According to the video speaker, Tesla aims for 250,000 Cybertruck units produced annually."}
+        {"id": "C1", "text": "According to the video speaker, Tesla Cybertruck production started in November 2023.", "confidence": 0.9},
+        {"id": "C2", "text": "According to the video speaker, Tesla Cybertruck deliveries began in November 2023 and were limited to employees.", "confidence": 0.9},
+        {"id": "C3", "text": "According to the video speaker, Tesla aims for 250,000 Cybertruck units produced annually.", "confidence": 0.8}
       ]
     }
 
@@ -204,8 +205,8 @@ claim_structuring_agent = LlmAgent(
     Output:
     {
       "claims": [
-        {"id": "C1", "text": "The company's CEO announced Q4 2023 revenue of $500 million."},
-        {"id": "C2", "text": "The company's CEO announced Q4 2023 revenue was up 40% year-over-year."}
+        {"id": "C1", "text": "The company's CEO announced Q4 2023 revenue of $500 million.", "confidence": 1.0},
+        {"id": "C2", "text": "The company's CEO announced Q4 2023 revenue was up 40% year-over-year.", "confidence": 1.0}
       ]
     }
 
@@ -222,8 +223,8 @@ claim_structuring_agent = LlmAgent(
     Output:
     {
       "claims": [
-        {"id": "C1", "text": "The tallest building (unspecified which/where) is 500 meters long."},
-        {"id": "C2", "text": "The president of Georgia is Kavela."}
+        {"id": "C1", "text": "The tallest building (unspecified which/where) is 500 meters long.", "confidence": 0.5},
+        {"id": "C2", "text": "The president of Georgia is Kavela.", "confidence": 0.7}
       ]
     }
 

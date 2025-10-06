@@ -71,6 +71,9 @@ class AtomicClaimOutput(BaseModel):
 
     id: str = Field(description="Unique identifier for the claim")
     text: str = Field(description="The atomic, verifiable claim text")
+    confidence: float = Field(
+        description="The model's confidence in the accuracy of the extracted claim, from 0.0 to 1.0"
+    )
 
 
 class StructuredClaimsOutput(BaseModel):
@@ -89,6 +92,9 @@ class GapQuestionOutput(BaseModel):
     claim_id: str = Field(description="ID of the claim this question relates to")
     question_type: str = Field(
         description="Type: temporal, quantifiable, ambiguous, or implicit"
+    )
+    priority: str = Field(
+        description="Priority of the question: high, medium, or low"
     )
 
 

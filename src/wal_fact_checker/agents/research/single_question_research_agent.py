@@ -113,7 +113,7 @@ def create_enforce_query_deduplication_callback(
 
 
 def create_enforce_tool_call_limits_callback(
-    cache: dict[str, Any],
+    cache: dict[str, Any], tool_max_calls: dict[str, int]
 ) -> Callable[[BaseTool, dict[str, Any], ToolContext], dict[str, Any] | None]:
     def enforce_tool_call_limits(
         tool: BaseTool, args: dict[str, Any], tool_context: ToolContext
@@ -475,7 +475,7 @@ def compose_after_tool_callbacks(
 
 
 def create_combined_before_tool_callback(
-    cache: dict[str, Any],
+    cache: dict[str, Any], tool_max_calls: dict[str, int]
 ) -> Callable[[BaseTool, dict[str, Any], ToolContext], dict[str, Any] | None]:
     """
     Chain multiple before-tool callbacks in sequence.
@@ -484,7 +484,7 @@ def create_combined_before_tool_callback(
     If any callback returns a dict (error/skip), stop and return it.
     """
     dedup_callback = create_enforce_query_deduplication_callback(cache)
-    limit_callback = create_enforce_tool_call_limits_callback(cache)
+    limit_callback = create_enforce_tool_call_limits_callback(cache, tool_max_calls)
 
     return compose_before_tool_callbacks([dedup_callback, limit_callback])
 
@@ -506,7 +506,9 @@ def create_combined_after_tool_callback(
     return compose_after_tool_callbacks([store_urls_callback, filter_content_callback])
 
 
-def create_single_question_research_agent(question: str, output_key: str) -> LlmAgent:
+def create_single_question_research_agent(
+    question: str, output_key: str, priority: str
+) -> LlmAgent:
     """
     Factory function to create a new instance of a UnifiedResearchAgent.
     This is necessary to comply with ADK's single-parent rule for agents.
@@ -515,6 +517,22 @@ def create_single_question_research_agent(question: str, output_key: str) -> Llm
 
     # Create shared cache for callbacks
     callback_cache: dict[str, Any] = {}
+
+    # Define priority-based limits
+    priority_limits = {
+        "high": {"search_tool": 4, "scrape_tool": 2},
+        "medium": {"search_tool": 2, "scrape_tool": 1},
+        "low": {"search_tool": 1, "scrape_tool": 0},
+    }
+
+    limits = priority_limits.get(priority, priority_limits["medium"])
+    max_search_calls = limits["search_tool"]
+    max_scrape_calls = limits["scrape_tool"]
+
+    tool_max_calls: dict[str, int] = {
+        "search_tool": max_search_calls,
+        "scrape_tool": max_scrape_calls,
+    }
 
     return LlmAgent(
         # Each agent instance needs a unique name.
@@ -547,12 +565,12 @@ queries.
 
 ## YOUR TOOLS
 
-**search_tool (use up to {MAX_NUMBER_OF_SEARCH_TOOL_CALLS} times)**:
+**search_tool (use up to {max_search_calls} times)**:
 - Takes a query string (can be any length - powered by LLM)
 - Returns search results with titles, snippets, and URLs
 - Use for exploration and finding authoritative sources
 
-**scrape_tool (use up to {MAX_NUMBER_OF_SCRAPE_TOOL_CALLS} time)**:
+**scrape_tool (use up to {max_scrape_calls} time)**:
 - Takes a list of URLs (maximum 5 URLs per call)
 - Returns full page content from those URLs
 - Use only when search snippets are insufficient
@@ -594,7 +612,7 @@ Decomposition strategy:
 
 ## MULTI-SEARCH STRATEGY
 
-You have {MAX_NUMBER_OF_SEARCH_TOOL_CALLS} search calls - use them strategically:
+You have {max_search_calls} search calls - use them strategically:
 
 **APPROACH A - Broad then Narrow:**
 - Search 1: Broad query covering main question
@@ -631,10 +649,10 @@ Priority: official websites > news organizations > academic > industry publicati
 
 ### Step 1: Decompose Question
 - Analyze the question and identify key components
-- Break into {MAX_NUMBER_OF_SEARCH_TOOL_CALLS}-3 focused search-friendly queries
+- Break into {max_search_calls}-3 focused search-friendly queries
 - Plan your search strategy (broad-narrow, multi-angle, or temporal)
 
-### Step 2: Execute Search Calls (up to {MAX_NUMBER_OF_SEARCH_TOOL_CALLS} times)
+### Step 2: Execute Search Calls (up to {max_search_calls} times)
 - **For each search call**:
   - Use search_tool with focused query (NOT the full question)
   - Review results: titles, snippets, URLs, source quality
@@ -648,10 +666,10 @@ Priority: official websites > news organizations > academic > industry publicati
 
 - **Stop searching if**:
   - You have sufficient information to answer comprehensively
-  - You've used all {MAX_NUMBER_OF_SEARCH_TOOL_CALLS} search calls
+  - You've used all {max_search_calls} search calls
   - Additional searches unlikely to add value
 
-### Step 3: Scrape (if needed, up to {MAX_NUMBER_OF_SCRAPE_TOOL_CALLS} time)
+### Step 3: Scrape (if needed, up to {max_scrape_calls} time)
 - **Evaluate scraping value**:
   - Do search snippets lack critical details?
   - Did you find authoritative sources needing full content?
@@ -757,7 +775,9 @@ Then execute your research workflow systematically.
             groq_search_tool,
             scrape_websites_tool,
         ],
-        before_tool_callback=create_combined_before_tool_callback(callback_cache),
+        before_tool_callback=create_combined_before_tool_callback(
+            callback_cache, tool_max_calls
+        ),
         after_tool_callback=create_combined_after_tool_callback(callback_cache),
         output_key=output_key,
     )
