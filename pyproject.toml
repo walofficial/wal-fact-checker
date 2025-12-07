@@ -8,37 +8,37 @@ version = "0.1.0"
 description = ""
 authors = [{ name = "Your Name", email = "your@email.com" }]
 dependencies = [
-    "google-adk~=1.14.0",
-    "langfuse>=2.53.0",
-    "openinference-instrumentation-google-adk<=0.1.4",
-    "opentelemetry-exporter-gcp-trace~=1.9.0",
-    "google-cloud-logging~=3.11.4",
-    "google-cloud-secret-manager>=2.20.0",
-    "google-cloud-aiplatform~=1.112.0",
-    "fastapi~=0.115.8",
-    "uvicorn~=0.34.0",
-    "psycopg2-binary>=2.9.10",
+    "google-adk>=1.20.0",
+    "langfuse>=3.10.5",
+    "openinference-instrumentation-google-adk>=0.1.7",
+    "opentelemetry-exporter-gcp-trace>=1.11.0",
+    "google-cloud-logging>=3.12.1",
+    "google-cloud-secret-manager>=2.25.0",
+    "google-cloud-aiplatform>=1.129.0",
+    "fastapi>=0.115.0,<0.119.0",
+    "uvicorn>=0.38.0",
+    "psycopg2-binary>=2.9.11",
     "requests>=2.32.0",
-    "pydantic>=2.9.0",
-    "groq>=0.31.1",
+    "pydantic>=2.12.5",
+    "groq>=0.37.1",
     "numpy>=1.26.0",
-    "structlog>=23.0.0",
-    "a2a-sdk[http-server]==0.3.7",
+    "structlog>=25.5.0",
+    "a2a-sdk[http-server]>=0.3.7",
     "scikit-learn>=1.7.2",
 ]
 requires-python = ">=3.10,<3.14"
 
 [dependency-groups]
-dev = ["pytest>=8.3.4", "pytest-asyncio>=0.23.8", "nest-asyncio>=1.6.0"]
+dev = ["pytest>=9.0.0", "pytest-asyncio>=1.3.0", "nest-asyncio>=1.6.0"]
 
 [project.optional-dependencies]
-jupyter = ["jupyter~=1.0.0"]
+jupyter = ["jupyter>=1.0.0"]
 lint = [
-    "ruff>=0.4.6",
-    "mypy~=1.15.0",
-    "codespell~=2.2.0",
-    "types-pyyaml~=6.0.12.20240917",
-    "types-requests~=2.32.0.20240914",
+    "ruff>=0.14.8",
+    "mypy>=1.15.0",
+    "codespell>=2.2.6",
+    "types-pyyaml>=6.0.12.20240917",
+    "types-requests>=2.32.0.20240914",
 ]
 
 [project.urls]
@@ -94,7 +94,7 @@ ignore-words-list = "rouge"
 skip = "./locust_env/*,uv.lock,.venv,./frontend,**/*.ipynb"
 
 [tool.pytest.ini_options]
-minversion = "8.0"
+minversion = "9.0"
 pythonpath = "."
 asyncio_default_fixture_loop_scope = "function"
 addopts = "-ra -q --strict-markers --strict-config"
