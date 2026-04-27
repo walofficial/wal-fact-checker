@@ -19,12 +19,12 @@ from a2a.server.events.event_queue import EventQueue
 from a2a.types import (
     Artifact,
     Message,
+    Part,
     Role,
     TaskArtifactUpdateEvent,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
-    TextPart,
 )
 from google.adk.a2a.converters.event_converter import convert_event_to_a2a_events
 from google.adk.a2a.converters.part_converter import (
@@ -224,7 +224,7 @@ class WalAgentExecutor(AgentExecutor):
                         message=Message(
                             message_id=str(uuid.uuid4()),
                             role=Role.agent,
-                            parts=[TextPart(text="Done")],
+                            parts=[Part(text="Done")],
                         ),
                     ),
                     context_id=context.context_id,
@@ -244,7 +244,7 @@ class WalAgentExecutor(AgentExecutor):
                     message=Message(
                         message_id=str(uuid.uuid4()),
                         role=Role.agent,
-                        parts=[TextPart(text=str(err))],
+                        parts=[Part(text=str(err))],
                     ),
                 ),
                 context_id=context.context_id,
