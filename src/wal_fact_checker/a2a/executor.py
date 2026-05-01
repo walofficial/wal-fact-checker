@@ -19,12 +19,12 @@ from a2a.server.events.event_queue import EventQueue
 from a2a.types import (
     Artifact,
     Message,
-    Part,
     Role,
     TaskArtifactUpdateEvent,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
+    TextPart,
 )
 from google.adk.a2a.converters.event_converter import convert_event_to_a2a_events
 from google.adk.a2a.converters.part_converter import (
@@ -32,7 +32,7 @@ from google.adk.a2a.converters.part_converter import (
     convert_genai_part_to_a2a_part,
 )
 from google.adk.a2a.converters.request_converter import (
-    convert_a2a_request_to_adk_run_args,
+    convert_a2a_request_to_agent_run_request,
 )
 from google.adk.a2a.converters.utils import _get_adk_metadata_key
 from google.adk.runners import Runner
@@ -118,9 +118,9 @@ class WalAgentExecutor(AgentExecutor):
     ) -> None:
         runner = await self._resolve_runner()
 
-        run_args = convert_a2a_request_to_adk_run_args(
+        run_args = convert_a2a_request_to_agent_run_request(
             context, self._config.a2a_part_converter
-        )
+        ).model_dump()
 
         session = await self._prepare_session(context, run_args, runner)
         invocation_ctx = runner._new_invocation_context(  # pylint: disable=protected-access
@@ -224,7 +224,7 @@ class WalAgentExecutor(AgentExecutor):
                         message=Message(
                             message_id=str(uuid.uuid4()),
                             role=Role.agent,
-                            parts=[Part(text="Done")],
+                            parts=[TextPart(text="Done")],
                         ),
                     ),
                     context_id=context.context_id,
@@ -244,7 +244,7 @@ class WalAgentExecutor(AgentExecutor):
                     message=Message(
                         message_id=str(uuid.uuid4()),
                         role=Role.agent,
-                        parts=[Part(text=str(err))],
+                        parts=[TextPart(text=str(err))],
                     ),
                 ),
                 context_id=context.context_id,

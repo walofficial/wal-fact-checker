@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from typing import Final
 
+from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.server.routes import create_agent_card_routes, create_jsonrpc_routes
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
@@ -20,7 +20,6 @@ from google.adk.auth.credential_service.in_memory_credential_service import (
 from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
 from google.adk.runners import Runner
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from starlette.applications import Starlette
 
 from wal_fact_checker.a2a.executor import WalAgentExecutor
 from wal_fact_checker.agent import root_agent
@@ -87,11 +86,11 @@ request_handler = DefaultRequestHandler(
     agent_executor=agent_executor, task_store=InMemoryTaskStore()
 )
 
-# Starlette routes composed from A2A v1.0 route factories
-_routes = [
-    *create_agent_card_routes(public_agent_card),
-    *create_jsonrpc_routes(request_handler, rpc_url="/"),
-]
+# Starlette application implementing A2A server endpoints
+_server = A2AStarletteApplication(
+    agent_card=public_agent_card,
+    http_handler=request_handler,
+)
 
 # ASGI app for uvicorn/gunicorn
-a2a_app = Starlette(routes=_routes)
+a2a_app = _server.build()
