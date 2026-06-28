@@ -32,6 +32,7 @@ from google.adk.a2a.converters.part_converter import (
     convert_genai_part_to_a2a_part,
 )
 from google.adk.a2a.converters.request_converter import (
+    AgentRunRequest,
     convert_a2a_request_to_agent_run_request,
 )
 from google.adk.a2a.converters.utils import _get_adk_metadata_key
@@ -118,15 +119,19 @@ class WalAgentExecutor(AgentExecutor):
     ) -> None:
         runner = await self._resolve_runner()
 
-        run_args = convert_a2a_request_to_agent_run_request(
+        # Keep the AgentRunRequest as a pydantic model. Calling `.model_dump()`
+        # here would recursively turn `new_message` (genai Content) and
+        # `run_config` (RunConfig) into plain dicts, which the ADK runner does
+        # not accept (it expects the typed objects, e.g. `run_config.support_cfc`).
+        run_request = convert_a2a_request_to_agent_run_request(
             context, self._config.a2a_part_converter
-        ).model_dump()
+        )
 
-        session = await self._prepare_session(context, run_args, runner)
+        session = await self._prepare_session(context, run_request, runner)
         invocation_ctx = runner._new_invocation_context(  # pylint: disable=protected-access
             session=session,
-            new_message=run_args["new_message"],
-            run_config=run_args["run_config"],
+            new_message=run_request.new_message,
+            run_config=run_request.run_config,
         )
 
         await event_queue.enqueue_event(
@@ -140,15 +145,15 @@ class WalAgentExecutor(AgentExecutor):
                 final=False,
                 metadata={
                     _get_adk_metadata_key("app_name"): runner.app_name,
-                    _get_adk_metadata_key("user_id"): run_args["user_id"],
-                    _get_adk_metadata_key("session_id"): run_args["session_id"],
+                    _get_adk_metadata_key("user_id"): run_request.user_id,
+                    _get_adk_metadata_key("session_id"): run_request.session_id,
                 },
             )
         )
 
         # Stream ADK events and convert to A2A events
         last_status_message: Message | None = None
-        async for adk_event in runner.run_async(**run_args):
+        async for adk_event in runner.run_async(**vars(run_request)):
             for a2a_event in convert_event_to_a2a_events(
                 adk_event,
                 invocation_ctx,
@@ -168,10 +173,10 @@ class WalAgentExecutor(AgentExecutor):
         await self._publish_completion(context, event_queue, last_status_message)
 
     async def _prepare_session(
-        self, context: RequestContext, run_args: dict[str, Any], runner: Runner
+        self, context: RequestContext, run_request: AgentRunRequest, runner: Runner
     ) -> Any:
-        session_id = run_args["session_id"]
-        user_id = run_args["user_id"]
+        session_id = run_request.session_id
+        user_id = run_request.user_id
         session = await runner.session_service.get_session(
             app_name=runner.app_name, user_id=user_id, session_id=session_id
         )
@@ -182,7 +187,7 @@ class WalAgentExecutor(AgentExecutor):
                 state={},
                 session_id=session_id,
             )
-            run_args["session_id"] = session.id
+            run_request.session_id = session.id
         return session
 
     async def _publish_completion(
